@@ -1,87 +1,59 @@
 package edu.century.finalproject;
 
 import java.util.Date;
-
+import java.util.*;
 public class Reservation {
 
-	String   reservationNumber;
-	Ticket[] tickets;
-	int      numberTickets;
-	Payment  payment;
-	Date     date;
+	private int reservationNumber;
+	private Ticket ticketInfo;
+	private Payment payment;
+	private Date date;
 	
-	public Reservation() {
-		// TODO Auto-generated constructor stub
-	}
-
-	public String getReservationNumber() {
+	public int getReservationNumber() {
 		return reservationNumber;
 	}
-
-	public void setReservationNumber(String reservationNumber) {
+	public void setReservationNumber(int reservationNumber) {
 		this.reservationNumber = reservationNumber;
 	}
-
-	public Ticket[] getTickets() {
-		return tickets;
+	public Ticket getTicketInfo() {
+		return ticketInfo;
 	}
-
-	public void setTickets(Ticket[] tickets) {
-		this.tickets = tickets;
+	public void setTicketInfo(Ticket ticketInfo) {
+		this.ticketInfo = ticketInfo;
 	}
-
-	public int getNumberTickets() {
-		return numberTickets;
-	}
-
-	public void setNumberTickets(int numberTickets) {
-		this.numberTickets = numberTickets;
-	}
-
 	public Payment getPayment() {
 		return payment;
 	}
-
 	public void setPayment(Payment payment) {
 		this.payment = payment;
 	}
-
 	public Date getDate() {
 		return date;
 	}
-
 	public void setDate(Date date) {
 		this.date = date;
 	}
-	
-	public String printTicket(int index) {
-		
-		String info = "";
-		
-		
-		return info;
+	public Reservation(Ticket ticketInfo,Payment payment, Date date) {
+		super();
+		Random ran = new Random();
+		this.reservationNumber = ran.nextInt(10000);
+		this.ticketInfo = ticketInfo;
+		this.payment = payment;
+		this.date = date;
 	}
-
-	public String printTickets() {
-		
-		String info = "";
-		
-		
-		return info;
-	}
-	
-	public String printReservation() {
-		
-		String info = "";
-		
-		
-		return info;
-	}
-	
 	@Override
 	public String toString() {
-		// TODO Auto-generated method stub
-		return super.toString();
+		return "Reservation [reservationNumber:" + reservationNumber + ", ticketInfo:" + ticketInfo.toString() + ", amount: "
+				+ payment.getTotal() + ", date=" + date + "]";
 	}
+	
+	public String toStringAdmin() {
+		return "Reservation [reservationNumber:" + reservationNumber + ", ticketInfo:" + ticketInfo.toString() + ", amount: "
+				+ payment.toString() + ", date=" + date + "]";
+	}
+	
+	
+	
+	
 	
 }
