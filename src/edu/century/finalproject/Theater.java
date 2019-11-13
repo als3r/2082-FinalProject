@@ -2,12 +2,21 @@ package edu.century.finalproject;
 
 public class Theater {
 	
-	String name;
-	int numberSeats;
+	private String name;
+	private int numberSeats;
 	
-	public Theater() {
-		// TODO Auto-generated constructor stub
+	
+	public Theater(String name, int numberSeats) {
+		super();
+		this.name = name;
+		this.numberSeats = numberSeats;
 	}
+	
+
+	public Theater() {
+		super();
+	}
+
 
 	public String getName() {
 		return name;

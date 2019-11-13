@@ -2,13 +2,24 @@ package edu.century.finalproject;
 
 public class Movie {
 
-	String title;
-	String description;
-	int    duration;
+	private String title;
+	private String description;
+	private int    duration;
 	
-	public Movie() {
-		// TODO Auto-generated constructor stub
+	
+
+	public Movie(String title, String description, int duration) {
+		super();
+		this.title = title;
+		this.description = description;
+		this.duration = duration;
 	}
+	
+
+	public Movie() {
+		super();
+	}
+
 
 	public String getTitle() {
 		return title;
