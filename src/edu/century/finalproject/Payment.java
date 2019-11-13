@@ -2,22 +2,13 @@ package edu.century.finalproject;
 
 public class Payment {
 	
-	private Person person;
-	private double total;
-	private String card;
-	private int numTickets;
+	Person person;
+	double total;
+	String card;
 	
-	public Payment(Person person,int numTickets, String card) {
-		this.person = person;
-		total= calculation(numTickets);
-		this.card = card;
-	}
-	
-
 	public Payment() {
-		super();
+		// TODO Auto-generated constructor stub
 	}
-
 
 	public Person getPerson() {
 		return person;
@@ -43,21 +34,10 @@ public class Payment {
 		this.card = card;
 	}
 	
-	public double calculation(int num) {
-		double total;
-		double price = 5.00;
-		total = num*price;
-		return total;
-	}
-
-	
-	
-	
 	@Override
 	public String toString() {
-		return "Payment [person=" + person + ", total=" + total + ", card=" + card + "]";
+		// TODO Auto-generated method stub
+		return super.toString();
 	}
-	
-	
 
 }

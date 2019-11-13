@@ -2,54 +2,58 @@ package edu.century.finalproject;
 
 import java.util.Date;
 import java.util.*;
-
 public class Reservation {
 
 	private int reservationNumber;
 	private Ticket ticketInfo;
+	private Payment payment;
 	private Date date;
-
+	
 	public int getReservationNumber() {
 		return reservationNumber;
 	}
-
 	public void setReservationNumber(int reservationNumber) {
 		this.reservationNumber = reservationNumber;
 	}
-
 	public Ticket getTicketInfo() {
 		return ticketInfo;
 	}
-
 	public void setTicketInfo(Ticket ticketInfo) {
 		this.ticketInfo = ticketInfo;
 	}
-
+	public Payment getPayment() {
+		return payment;
+	}
+	public void setPayment(Payment payment) {
+		this.payment = payment;
+	}
 	public Date getDate() {
 		return date;
 	}
-
 	public void setDate(Date date) {
 		this.date = date;
 	}
-
-	public Reservation(Ticket ticketInfo, Payment payment, Date date) {
+	public Reservation(Ticket ticketInfo,Payment payment, Date date) {
 		super();
 		Random ran = new Random();
 		this.reservationNumber = ran.nextInt(10000);
 		this.ticketInfo = ticketInfo;
+		this.payment = payment;
 		this.date = date;
 	}
-
 	@Override
 	public String toString() {
-		return "Reservation [reservationNumber:" + reservationNumber + ", ticketInfo:" + ticketInfo.toString()
-				+ ", date=" + date + "]";
+		return "Reservation [reservationNumber:" + reservationNumber + ", ticketInfo:" + ticketInfo.toString() + ", amount: "
+				+ payment.getTotal() + ", date=" + date + "]";
 	}
-
+	
 	public String toStringAdmin() {
-		return "Reservation [reservationNumber:" + reservationNumber + ", ticketInfo:" + ticketInfo.toString()
-				+ ", date=" + date + "]";
+		return "Reservation [reservationNumber:" + reservationNumber + ", ticketInfo:" + ticketInfo.toString() + ", amount: "
+				+ payment.toString() + ", date=" + date + "]";
 	}
-
+	
+	
+	
+	
+	
 }

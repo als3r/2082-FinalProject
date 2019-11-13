@@ -1,25 +1,22 @@
 package edu.century.finalproject;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Movie {
 
-	private String title;
-	private String description;
-	private int    duration;
+	String title;
+	String description;
+	String image;
+	int    duration;
+	public List<Genre> genres = new ArrayList<>();
+	public List<String> times = new ArrayList<>();
 	
-	
-
-	public Movie(String title, String description, int duration) {
-		super();
+	public Movie(String title, int duration, String description) {
 		this.title = title;
 		this.description = description;
 		this.duration = duration;
 	}
-	
-
-	public Movie() {
-		super();
-	}
-
 
 	public String getTitle() {
 		return title;
@@ -43,6 +40,35 @@ public class Movie {
 
 	public void setDuration(int duration) {
 		this.duration = duration;
+	}
+	
+	public String getImage() {
+		return image;
+	}
+
+	public Movie setImage(String image) {
+		this.image = image;
+		return this;
+	}
+	
+	public Movie addTime(String time) {
+		times.add(time);
+		return this;
+	}
+	
+	public Movie removeTime(int index) {
+		times.remove(index);
+		return this;
+	}
+	
+	public Movie addGenre(Genre genre) {
+		genres.add(genre);
+		return this;
+	}
+	
+	public Movie removeGenre(int index) {
+		genres.remove(index);
+		return this;
 	}
 
 	@Override
