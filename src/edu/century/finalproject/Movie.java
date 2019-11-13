@@ -5,17 +5,22 @@ import java.util.List;
 
 public class Movie {
 
-	String title;
-	String description;
-	String image;
+	private String title;
+	private String description;
+	private String image;
 	int    duration;
 	public List<Genre> genres = new ArrayList<>();
 	public List<String> times = new ArrayList<>();
 	
 	public Movie(String title, int duration, String description) {
+		super();
 		this.title = title;
 		this.description = description;
 		this.duration = duration;
+	}
+	
+	public Movie() {
+		super();
 	}
 
 	public String getTitle() {

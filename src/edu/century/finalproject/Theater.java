@@ -2,12 +2,16 @@ package edu.century.finalproject;
 
 public class Theater {
 	
-	String name;
-	int numberSeats;
+	private String name;
+	private int numberSeats;
 	
 	public Theater(String name, int numberSeats) {
 		this.name = name;
 		this.numberSeats = numberSeats;
+	}
+	
+	public Theater() {
+		super();
 	}
 
 	public String getName() {
