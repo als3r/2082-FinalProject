@@ -77,7 +77,7 @@ public class MovieMenuCollection {
 	//add edit method
 
 	// working on search method by title
-	public MovieMenuItem searchMovie(String title) {
+	public MovieMenuItem searchMovie(String title, String genre) {
 		for (int i = 0; i < movie.length; i++) {
 			if (movie[i].getMovie().getTitle().equals(title))
 				return movie[i];

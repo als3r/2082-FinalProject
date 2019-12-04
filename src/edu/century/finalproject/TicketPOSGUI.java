@@ -19,10 +19,15 @@ import javax.swing.JButton;
 import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.border.TitledBorder;
+
+import com.sun.org.apache.bcel.internal.generic.NEW;
+
 import javax.swing.border.EtchedBorder;
 import javax.swing.Action;
 import javax.imageio.ImageIO;
 import java.awt.Image;
+//import javafx.scene.image.Image;
+//import javafx.scene.image.ImageView;
 import java.io.InputStream;
 import java.awt.image.BufferedImage;
 import java.awt.Insets;
@@ -36,6 +41,7 @@ import java.awt.event.ActionEvent;
 
 import java.lang.IllegalArgumentException;
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.List;
 
 
@@ -72,10 +78,9 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
     /**
      * JTextField for Customer Info
      */
-    private JTextField customerFirstNameTextField = new JTextField(NUMBER_OF_CHAR_INPUT_MEDIUM);
-    private JTextField customerLastNameTextField  = new JTextField(NUMBER_OF_CHAR_INPUT_MEDIUM);
-    private JTextField customerEmailTextField     = new JTextField(NUMBER_OF_CHAR_INPUT_MEDIUM);
-    
+    private JTextField customerFirstNameTextField = new JTextField(NUMBER_OF_CHAR_INPUT_LARGE);
+    private JTextField customerLastNameTextField  = new JTextField(NUMBER_OF_CHAR_INPUT_LARGE);
+    private JTextField customerEmailTextField     = new JTextField(NUMBER_OF_CHAR_INPUT_LARGE);
     
     /**
      * JTextField for Payment Info
@@ -91,10 +96,68 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
     private JTextField loginUsernameTextField     = new JTextField(NUMBER_OF_CHAR_INPUT_MEDIUM);
     private JTextField loginPasswordTextField     = new JTextField(NUMBER_OF_CHAR_INPUT_MEDIUM);
     
-    private List<Genre>     genres   = new ArrayList<>();
-    private List<Theater>   theaters = new ArrayList<>();
-    private List<Movie>     movies   = new ArrayList<>();
-    private List<MovieTime> times    = new ArrayList<>();
+    // Display Selected Movie Details on Order/Purchase Page
+    private BufferedImage bufferedImage           = null;
+    private JLabel movieIconLabel                 = new JLabel();
+    private JLabel movieTitleLabel                = new JLabel();
+    private JLabel movieDescriptionLabel          = new JLabel();
+    private JLabel movieTimesLabel                = new JLabel();
+    private JLabel movieGenresLabel               = new JLabel();
+    
+    // Display Reservation Details on Confirmation Page
+    private JLabel confirmationNumberLabel        = new JLabel();
+    private JLabel confirmationEmailLabel         = new JLabel();
+    private JLabel confirmationMovieLabel         = new JLabel();
+    private JLabel confirmationTimeLabel          = new JLabel();
+    private JLabel confirmationNumberTicketsLabel = new JLabel();
+    private JLabel confirmationTotalLabel         = new JLabel();
+    
+//    private List<Genre>     genres   = new ArrayList<>();
+////    private List<Theater>   theaters = new ArrayList<>();
+////    private List<Movie>     movies   = new ArrayList<>();
+//    private List<MovieTime> times    = new ArrayList<>();
+    
+    /**
+     * To Store Genres
+     */
+//    private Hashtable<String, Genre> genres = new Hashtable<String, Genre>();
+    private List<Genre> genres = new ArrayList<>();
+    
+    /**
+     * To Store Movie times
+     */
+//    private Hashtable<String, String> times = new Hashtable<String, String>();
+    private List<String> times = new ArrayList<>();
+    
+    /**
+     * To Store Movies and search by title
+     */
+//    private Hashtable<String, Theater> theaters = new Hashtable<String, Theater>();
+    private List<Theater> theaters = new ArrayList<>();
+    
+    /**
+     * To Store Movies and search by title
+     */
+//    private Hashtable<String, Movie> movies = new Hashtable<String, Movie>();
+    private List<Movie> movies = new ArrayList<>();
+//    private MovieMenuCollection movieCollection = new MovieMenuCollection();
+
+    
+    /**
+     * To Store current reservation
+     */
+    private Reservation reservation = new Reservation();
+    
+    /**
+     * To Store chosen movie, negative value = not chosen
+     */
+    private int chosenMovieIndex = -1;
+    
+    /**
+     * To Store reservation and search by Reservation number
+     */
+//    private Hashtable<String, Reservation> reservations = new Hashtable<String, Reservation>();
+    private List<Reservation> reservations = new ArrayList<>();
     
     /**
      * JComboBox for period selector
@@ -104,7 +167,17 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
     /**
      * JComboBox for period selector
      */
-    private JComboBox<String> timeSelectorBox;;
+    private JComboBox<String> timeSelectorBox;
+    
+    /**
+     * JComboBox for period selector
+     */
+    private JComboBox<String> orderTicketsTimeSelectorBox = new JComboBox(); 
+    
+    /**
+     * JComboBox for period selector
+     */
+    private JComboBox<String> orderTicketsNumberTicketsSelectorBox = new JComboBox(GUIConstants.NUMBER_TICKETS_ARRAY); 
     
     
     /**
@@ -112,7 +185,9 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
 	 */
 	JMenuBar  menuBar;
 	JMenu     menuDemo, menuLogIn, menuAdmin;
-	JMenuItem menuDemoCustomerViewitem, 
+	JMenuItem menuDemoCustomerViewitem,
+			  menuDemoOrderPageViewitem,
+			  menuDemoConfirmationPageViewitem,
 			  menuDemoExitItem,
 		  	  menuLoginItem; 
 	JMenuItem menuAdminMoviesItem, 
@@ -154,6 +229,12 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
 	// (view from admin perspective)
 	JPanel adminMainPanel;
 	
+	// Order page
+	JPanel orderPageMainPanel;
+	
+	// Confirmation page
+	JPanel confirmationPageMainPanel;
+	
     
     /**
      * Main function
@@ -181,19 +262,29 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
         // loading top menu
         loadMenu();
         
+        System.out.println(genres);
+        
+//        System.out.println(movies);
+//        System.out.println(genres);
+//        System.out.println(times);
+//        System.out.println(times);
+        
         loadDefaultData();
         //load comboboxes
         String[] arrayGenres = new String[genres.size()];
         for (int i = 0; i < genres.size(); i++) {
-        	arrayGenres[i] = genres.get(i).name;
+        	arrayGenres[i] = genres.get(i).getName();
 		}
         genreSelectorBox = new JComboBox(arrayGenres);
+//        genreSelectorBox = new JComboBox();
         
         String[] arrayTimes = new String[times.size()];
         for (int i = 0; i < times.size(); i++) {
-        	arrayTimes[i] = times.get(i).time;
+        	arrayTimes[i] = times.get(i).toString();
 		}
         timeSelectorBox = new JComboBox(arrayTimes);
+//        timeSelectorBox = new JComboBox();
+        
         
         
         // Create spring layout
@@ -221,6 +312,26 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
         // Login
         JButton actionLoginButton = new JButton(BUTTON_CAPTION_LOGIN);
         actionLoginButton.addActionListener(this);
+        
+        // Back (Purchase tickets)
+        JButton actionBackButton = new JButton(BUTTON_CAPTION_BACK);
+        actionBackButton.addActionListener(this);
+        
+        // Back (Confirmation Page)
+        JButton actionBackAfterPurchaseButton = new JButton(BUTTON_CAPTION_EXIT);
+        actionBackAfterPurchaseButton.addActionListener(this);
+        
+        // Order (Purchase tickets)
+        JButton actionOrderButton = new JButton(BUTTON_CAPTION_ORDER);
+        actionOrderButton.addActionListener(this);
+        
+        // Populate Order Page With Test Values
+        JButton actionOrderTestValuesButton = new JButton(BUTTON_CAPTION_ORDER_TEST_VALUES);
+        actionOrderTestValuesButton.addActionListener(this);
+        
+        // Populate Order Page With Test Values
+        JButton actionOrderResetFormButton = new JButton(BUTTON_CAPTION_ORDER_RESET_FORM);
+        actionOrderResetFormButton.addActionListener(this);
         
         
         
@@ -252,9 +363,6 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
         JButton button;
         String buttonText = "";
         
-        BufferedImage image = null;
-		
-        
         for (int i = 0; i < movies.size(); i++) {
         	buttonText = "";
         	buttonText += movies.get(i).getTitle().toUpperCase() + "\n" + "\n";
@@ -281,6 +389,8 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
 			button.setMargin(new Insets(0,0,0,0));
 			button.setHorizontalAlignment(SwingConstants.LEFT);
 			button.setAlignmentY(TOP_ALIGNMENT);
+			button.setActionCommand("ChooseMovie_" + i);
+			button.addActionListener(this);
 			try {
 				
 				System.out.println("resources\\" + movies.get(i).getImage());
@@ -288,9 +398,9 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
 				ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 			    InputStream input = classLoader.getResourceAsStream("resources\\" + movies.get(i).getImage());
 			    // URL input = classLoader.getResource("image.png"); // <-- You can use URL class too.
-			    image = ImageIO.read(input);
+			    bufferedImage = ImageIO.read(input);
 
-			    button.setIcon(new ImageIcon(image));
+			    button.setIcon(new ImageIcon(bufferedImage));
 			  } catch (Exception ex) {
 			    System.out.println(ex);
 			  }
@@ -370,6 +480,218 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
 		
 		
 		
+		/**
+         *  Start Order Page Panel (screen)
+         */
+		// Set Login Panel Position Inside Main Window Panel
+		orderPageMainPanel = new JPanel ();
+		orderPageMainPanel.setBorder( new TitledBorder ( new EtchedBorder (), "Order" ) );
+		orderPageMainPanel.setLayout(mainLayout);
+		
+		// Set Login Panel/Screen position inside Main Window Panel
+        mainLayout.putConstraint(SpringLayout.WEST,  orderPageMainPanel, 0, SpringLayout.WEST, mainWindowPanel);
+        mainLayout.putConstraint(SpringLayout.EAST,  orderPageMainPanel, 0, SpringLayout.EAST, mainWindowPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, orderPageMainPanel, 0, SpringLayout.NORTH, mainWindowPanel);
+        mainLayout.putConstraint(SpringLayout.SOUTH, orderPageMainPanel, 0, SpringLayout.SOUTH, mainWindowPanel);
+        
+        // Set position of the elements inside Login Panel/Screen
+        // Movie Description
+        movieTitleLabel.setFont(GUIFonts.FONT_18);
+        
+        mainLayout.putConstraint(SpringLayout.WEST,  movieTitleLabel, TicketPOSGUI.LAYOUT_PADDING_2, SpringLayout.WEST, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, movieTitleLabel, TicketPOSGUI.LAYOUT_HEIGHT_3, SpringLayout.NORTH, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.WEST,  movieIconLabel, TicketPOSGUI.LAYOUT_PADDING_2, SpringLayout.WEST, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, movieIconLabel, TicketPOSGUI.LAYOUT_HEIGHT_4, SpringLayout.NORTH, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.WEST,  movieTimesLabel, TicketPOSGUI.LAYOUT_PADDING_7, SpringLayout.WEST, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, movieTimesLabel, TicketPOSGUI.LAYOUT_HEIGHT_3, SpringLayout.NORTH, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.WEST,  movieGenresLabel, TicketPOSGUI.LAYOUT_PADDING_7, SpringLayout.WEST, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, movieGenresLabel, TicketPOSGUI.LAYOUT_HEIGHT_4, SpringLayout.NORTH, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.WEST,  movieDescriptionLabel, TicketPOSGUI.LAYOUT_PADDING_7, SpringLayout.WEST, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, movieDescriptionLabel, TicketPOSGUI.LAYOUT_HEIGHT_5, SpringLayout.NORTH, orderPageMainPanel);
+        
+        // Row 0 - Back Button
+        mainLayout.putConstraint(SpringLayout.WEST,  actionBackButton, TicketPOSGUI.LAYOUT_PADDING_1, SpringLayout.WEST, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, actionBackButton, TicketPOSGUI.LAYOUT_HEIGHT_1, SpringLayout.NORTH, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.WEST,  TicketPOSGUI.SELECT_TICKETS_LABEL, TicketPOSGUI.LAYOUT_PADDING_14, SpringLayout.WEST, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.SELECT_TICKETS_LABEL, TicketPOSGUI.LAYOUT_HEIGHT_3, SpringLayout.NORTH, orderPageMainPanel);
+        TicketPOSGUI.SELECT_TICKETS_LABEL.setFont(GUIFonts.FONT_18);
+        
+        
+        
+        mainLayout.putConstraint(SpringLayout.WEST,  TicketPOSGUI.PAYMENT_FORM_LABEL, TicketPOSGUI.LAYOUT_PADDING_14, SpringLayout.WEST, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.PAYMENT_FORM_LABEL, TicketPOSGUI.LAYOUT_HEIGHT_7, SpringLayout.NORTH, orderPageMainPanel);
+        TicketPOSGUI.PAYMENT_FORM_LABEL.setFont(GUIFonts.FONT_18);
+        
+        // Row - Select Time
+        mainLayout.putConstraint(SpringLayout.WEST,  TicketPOSGUI.SELECT_TICKETS_TIME_LABEL, TicketPOSGUI.LAYOUT_PADDING_14, SpringLayout.WEST, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.SELECT_TICKETS_TIME_LABEL, TicketPOSGUI.LAYOUT_HEIGHT_4, SpringLayout.NORTH, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.WEST,  orderTicketsTimeSelectorBox,  LAYOUT_PADDING_16, SpringLayout.WEST, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, orderTicketsTimeSelectorBox,  LAYOUT_HEIGHT_4, SpringLayout.NORTH, orderPageMainPanel);
+        
+        // Row - Select Number Tickets
+        mainLayout.putConstraint(SpringLayout.WEST,  TicketPOSGUI.SELECT_TICKETS_NUMBER_LABEL, TicketPOSGUI.LAYOUT_PADDING_14, SpringLayout.WEST, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.SELECT_TICKETS_NUMBER_LABEL, TicketPOSGUI.LAYOUT_HEIGHT_5, SpringLayout.NORTH, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.WEST,  orderTicketsNumberTicketsSelectorBox,  LAYOUT_PADDING_16, SpringLayout.WEST, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, orderTicketsNumberTicketsSelectorBox,  LAYOUT_HEIGHT_5, SpringLayout.NORTH, orderPageMainPanel);
+        
+        // Row - Customer First Name
+        mainLayout.putConstraint(SpringLayout.WEST,  TicketPOSGUI.CUSTOMER_FIRST_NAME_LABEL, TicketPOSGUI.LAYOUT_PADDING_14, SpringLayout.WEST, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.CUSTOMER_FIRST_NAME_LABEL, TicketPOSGUI.LAYOUT_HEIGHT_8+20, SpringLayout.NORTH, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.WEST,  customerFirstNameTextField,  LAYOUT_PADDING_16, SpringLayout.WEST, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, customerFirstNameTextField,  LAYOUT_HEIGHT_8+20, SpringLayout.NORTH, orderPageMainPanel);
+        // Row - Customer Last Name
+        mainLayout.putConstraint(SpringLayout.WEST,  TicketPOSGUI.CUSTOMER_LAST_NAME_LABEL, TicketPOSGUI.LAYOUT_PADDING_14, SpringLayout.WEST, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.CUSTOMER_LAST_NAME_LABEL, TicketPOSGUI.LAYOUT_HEIGHT_9+20, SpringLayout.NORTH, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.WEST,  customerLastNameTextField,  LAYOUT_PADDING_16, SpringLayout.WEST, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, customerLastNameTextField,  LAYOUT_HEIGHT_9+20, SpringLayout.NORTH, orderPageMainPanel);
+        // Row - Customer Email
+        mainLayout.putConstraint(SpringLayout.WEST,  TicketPOSGUI.CUSTOMER_EMAIL_LABEL, TicketPOSGUI.LAYOUT_PADDING_14, SpringLayout.WEST, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.CUSTOMER_EMAIL_LABEL, TicketPOSGUI.LAYOUT_HEIGHT_10+20, SpringLayout.NORTH, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.WEST,  customerEmailTextField,  LAYOUT_PADDING_16, SpringLayout.WEST, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, customerEmailTextField,  LAYOUT_HEIGHT_10+20, SpringLayout.NORTH, orderPageMainPanel);
+        // Row - Customer Card Number
+        mainLayout.putConstraint(SpringLayout.WEST,  TicketPOSGUI.CARD_NUMBER_LABEL, TicketPOSGUI.LAYOUT_PADDING_14, SpringLayout.WEST, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.CARD_NUMBER_LABEL, TicketPOSGUI.LAYOUT_HEIGHT_11+20, SpringLayout.NORTH, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.WEST,  cardNumberTextField,  LAYOUT_PADDING_16, SpringLayout.WEST, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, cardNumberTextField,  LAYOUT_HEIGHT_11+20, SpringLayout.NORTH, orderPageMainPanel);
+        // Row - Customer Card Expiration
+        mainLayout.putConstraint(SpringLayout.WEST,  TicketPOSGUI.CARD_EXP_MONTH_LABEL, TicketPOSGUI.LAYOUT_PADDING_14, SpringLayout.WEST, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.CARD_EXP_MONTH_LABEL, TicketPOSGUI.LAYOUT_HEIGHT_12+20, SpringLayout.NORTH, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.WEST,  cardExpMonthTextField,  LAYOUT_PADDING_16, SpringLayout.WEST, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, cardExpMonthTextField,  LAYOUT_HEIGHT_12+20, SpringLayout.NORTH, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.WEST,  TicketPOSGUI.CARD_EXP_YEAR_LABEL, TicketPOSGUI.LAYOUT_PADDING_18, SpringLayout.WEST, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.CARD_EXP_YEAR_LABEL, TicketPOSGUI.LAYOUT_HEIGHT_12+20, SpringLayout.NORTH, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.WEST,  cardExpYearTextField,  LAYOUT_PADDING_1, SpringLayout.EAST, TicketPOSGUI.CARD_EXP_YEAR_LABEL);
+        mainLayout.putConstraint(SpringLayout.NORTH, cardExpYearTextField,  LAYOUT_HEIGHT_12+20, SpringLayout.NORTH, orderPageMainPanel);
+        // Row - Customer Card Zip Code
+        mainLayout.putConstraint(SpringLayout.WEST,  TicketPOSGUI.CARD_ZIP_LABEL, TicketPOSGUI.LAYOUT_PADDING_14, SpringLayout.WEST, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.CARD_ZIP_LABEL, TicketPOSGUI.LAYOUT_HEIGHT_13+20, SpringLayout.NORTH, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.WEST,  cardZipTextField,  LAYOUT_PADDING_16, SpringLayout.WEST, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, cardZipTextField,  LAYOUT_HEIGHT_13+20, SpringLayout.NORTH, orderPageMainPanel);
+        // Row - Order Button
+        mainLayout.putConstraint(SpringLayout.WEST,  actionOrderButton, TicketPOSGUI.LAYOUT_PADDING_14, SpringLayout.WEST, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, actionOrderButton, TicketPOSGUI.LAYOUT_HEIGHT_15, SpringLayout.NORTH, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.WEST,  actionOrderTestValuesButton, TicketPOSGUI.LAYOUT_PADDING_1, SpringLayout.EAST, actionOrderButton);
+        mainLayout.putConstraint(SpringLayout.NORTH, actionOrderTestValuesButton, TicketPOSGUI.LAYOUT_HEIGHT_15, SpringLayout.NORTH, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.WEST,  actionOrderResetFormButton, TicketPOSGUI.LAYOUT_PADDING_1, SpringLayout.EAST, actionOrderTestValuesButton);
+        mainLayout.putConstraint(SpringLayout.NORTH, actionOrderResetFormButton, TicketPOSGUI.LAYOUT_HEIGHT_15, SpringLayout.NORTH, orderPageMainPanel);
+        
+        // Add elements to Login Panel
+        orderPageMainPanel.add(TicketPOSGUI.SELECT_TICKETS_LABEL);
+        orderPageMainPanel.add(TicketPOSGUI.SELECT_TICKETS_TIME_LABEL);
+        orderPageMainPanel.add(TicketPOSGUI.SELECT_TICKETS_NUMBER_LABEL);
+        orderPageMainPanel.add(orderTicketsTimeSelectorBox);
+        orderPageMainPanel.add(orderTicketsNumberTicketsSelectorBox);
+        
+        orderPageMainPanel.add(TicketPOSGUI.PAYMENT_FORM_LABEL);
+        orderPageMainPanel.add(TicketPOSGUI.CUSTOMER_FIRST_NAME_LABEL);
+        orderPageMainPanel.add(TicketPOSGUI.CUSTOMER_LAST_NAME_LABEL);
+        orderPageMainPanel.add(TicketPOSGUI.CUSTOMER_EMAIL_LABEL);
+        orderPageMainPanel.add(TicketPOSGUI.CARD_NUMBER_LABEL);
+        orderPageMainPanel.add(TicketPOSGUI.CARD_EXP_MONTH_LABEL);
+        orderPageMainPanel.add(TicketPOSGUI.CARD_EXP_YEAR_LABEL);
+        orderPageMainPanel.add(TicketPOSGUI.CARD_ZIP_LABEL);
+        orderPageMainPanel.add(customerFirstNameTextField);
+        orderPageMainPanel.add(customerLastNameTextField);
+        orderPageMainPanel.add(customerEmailTextField);
+        orderPageMainPanel.add(cardNumberTextField);
+        orderPageMainPanel.add(cardExpMonthTextField);
+        orderPageMainPanel.add(cardExpYearTextField);
+        orderPageMainPanel.add(cardZipTextField);
+        
+        orderPageMainPanel.add(actionBackButton);
+        orderPageMainPanel.add(actionOrderButton);
+        orderPageMainPanel.add(actionOrderTestValuesButton);
+        orderPageMainPanel.add(actionOrderResetFormButton);
+        orderPageMainPanel.add(movieIconLabel);
+        orderPageMainPanel.add(movieTitleLabel);
+        orderPageMainPanel.add(movieDescriptionLabel);
+        orderPageMainPanel.add(movieGenresLabel);
+        orderPageMainPanel.add(movieTimesLabel);
+        
+        
+        
+        // Add Login Panel to Main Panel
+		mainWindowPanel.add(orderPageMainPanel);
+		// End Order Page Panel (screen)
+		
+		
+		
+		
+		/**
+         *  Start Confirmation Page Panel (screen)
+         */
+		// Set Login Panel Position Inside Main Window Panel
+		confirmationPageMainPanel = new JPanel ();
+		confirmationPageMainPanel.setBorder( new TitledBorder ( new EtchedBorder (), "Confirmation" ) );
+		confirmationPageMainPanel.setLayout(mainLayout);
+		
+		// Set Login Panel/Screen position inside Main Window Panel
+        mainLayout.putConstraint(SpringLayout.WEST,  confirmationPageMainPanel, 0, SpringLayout.WEST, mainWindowPanel);
+        mainLayout.putConstraint(SpringLayout.EAST,  confirmationPageMainPanel, 0, SpringLayout.EAST, mainWindowPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, confirmationPageMainPanel, 0, SpringLayout.NORTH, mainWindowPanel);
+        mainLayout.putConstraint(SpringLayout.SOUTH, confirmationPageMainPanel, 0, SpringLayout.SOUTH, mainWindowPanel);
+        
+        // Set position of the elements inside Login Panel/Screen
+        // Row 0 - Back Button
+        mainLayout.putConstraint(SpringLayout.WEST,  actionBackAfterPurchaseButton, TicketPOSGUI.LAYOUT_PADDING_1, SpringLayout.WEST, confirmationPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, actionBackAfterPurchaseButton, TicketPOSGUI.LAYOUT_HEIGHT_1, SpringLayout.NORTH, confirmationPageMainPanel);
+        
+        mainLayout.putConstraint(SpringLayout.WEST,  TicketPOSGUI.CONFIRMATION_TITLE_LABEL, TicketPOSGUI.LAYOUT_PADDING_7, SpringLayout.WEST, confirmationPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.CONFIRMATION_TITLE_LABEL, TicketPOSGUI.LAYOUT_HEIGHT_4, SpringLayout.NORTH, confirmationPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.WEST,  TicketPOSGUI.CONFIRMATION_NUMBER_LABEL, TicketPOSGUI.LAYOUT_PADDING_7, SpringLayout.WEST, confirmationPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.CONFIRMATION_NUMBER_LABEL, TicketPOSGUI.LAYOUT_HEIGHT_5, SpringLayout.NORTH, confirmationPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.WEST,  confirmationNumberLabel, TicketPOSGUI.LAYOUT_PADDING_10, SpringLayout.WEST, confirmationPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, confirmationNumberLabel, TicketPOSGUI.LAYOUT_HEIGHT_5, SpringLayout.NORTH, confirmationPageMainPanel);
+        
+        mainLayout.putConstraint(SpringLayout.WEST,  TicketPOSGUI.CONFIRMATION_EMAIL_LABEL, TicketPOSGUI.LAYOUT_PADDING_7, SpringLayout.WEST, confirmationPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.CONFIRMATION_EMAIL_LABEL, TicketPOSGUI.LAYOUT_HEIGHT_6, SpringLayout.NORTH, confirmationPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.WEST,  confirmationEmailLabel, TicketPOSGUI.LAYOUT_PADDING_10, SpringLayout.WEST, confirmationPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, confirmationEmailLabel, TicketPOSGUI.LAYOUT_HEIGHT_6, SpringLayout.NORTH, confirmationPageMainPanel);
+        
+        mainLayout.putConstraint(SpringLayout.WEST,  TicketPOSGUI.CONFIRMATION_MOVIE_LABEL, TicketPOSGUI.LAYOUT_PADDING_7, SpringLayout.WEST, confirmationPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.CONFIRMATION_MOVIE_LABEL, TicketPOSGUI.LAYOUT_HEIGHT_7, SpringLayout.NORTH, confirmationPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.WEST,  confirmationMovieLabel, TicketPOSGUI.LAYOUT_PADDING_10, SpringLayout.WEST, confirmationPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, confirmationMovieLabel, TicketPOSGUI.LAYOUT_HEIGHT_7, SpringLayout.NORTH, confirmationPageMainPanel);
+        
+        mainLayout.putConstraint(SpringLayout.WEST,  TicketPOSGUI.CONFIRMATION_TIME_LABEL, TicketPOSGUI.LAYOUT_PADDING_7, SpringLayout.WEST, confirmationPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.CONFIRMATION_TIME_LABEL, TicketPOSGUI.LAYOUT_HEIGHT_8, SpringLayout.NORTH, confirmationPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.WEST,  confirmationTimeLabel, TicketPOSGUI.LAYOUT_PADDING_10, SpringLayout.WEST, confirmationPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, confirmationTimeLabel, TicketPOSGUI.LAYOUT_HEIGHT_8, SpringLayout.NORTH, confirmationPageMainPanel);
+        
+        mainLayout.putConstraint(SpringLayout.WEST,  TicketPOSGUI.CONFIRMATION_NUMBER_TICKETS_LABEL, TicketPOSGUI.LAYOUT_PADDING_7, SpringLayout.WEST, confirmationPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.CONFIRMATION_NUMBER_TICKETS_LABEL, TicketPOSGUI.LAYOUT_HEIGHT_9, SpringLayout.NORTH, confirmationPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.WEST,  confirmationNumberTicketsLabel, TicketPOSGUI.LAYOUT_PADDING_10, SpringLayout.WEST, confirmationPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, confirmationNumberTicketsLabel, TicketPOSGUI.LAYOUT_HEIGHT_9, SpringLayout.NORTH, confirmationPageMainPanel);
+        
+        mainLayout.putConstraint(SpringLayout.WEST,  TicketPOSGUI.CONFIRMATION_TOTAL_LABEL, TicketPOSGUI.LAYOUT_PADDING_7, SpringLayout.WEST, confirmationPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.CONFIRMATION_TOTAL_LABEL, TicketPOSGUI.LAYOUT_HEIGHT_10, SpringLayout.NORTH, confirmationPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.WEST,  confirmationTotalLabel, TicketPOSGUI.LAYOUT_PADDING_10, SpringLayout.WEST, confirmationPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, confirmationTotalLabel, TicketPOSGUI.LAYOUT_HEIGHT_10, SpringLayout.NORTH, confirmationPageMainPanel);
+        
+        // Add elements to Login Panel
+        confirmationPageMainPanel.add(TicketPOSGUI.CONFIRMATION_TITLE_LABEL);
+        confirmationPageMainPanel.add(TicketPOSGUI.CONFIRMATION_NUMBER_LABEL);
+        confirmationPageMainPanel.add(TicketPOSGUI.CONFIRMATION_EMAIL_LABEL);
+        confirmationPageMainPanel.add(TicketPOSGUI.CONFIRMATION_MOVIE_LABEL);
+        confirmationPageMainPanel.add(TicketPOSGUI.CONFIRMATION_TIME_LABEL);
+        confirmationPageMainPanel.add(TicketPOSGUI.CONFIRMATION_NUMBER_TICKETS_LABEL);
+        confirmationPageMainPanel.add(TicketPOSGUI.CONFIRMATION_TOTAL_LABEL);
+        
+        confirmationPageMainPanel.add(confirmationNumberLabel);
+        confirmationPageMainPanel.add(confirmationEmailLabel);
+        confirmationPageMainPanel.add(confirmationMovieLabel);
+        confirmationPageMainPanel.add(confirmationTimeLabel);
+        confirmationPageMainPanel.add(confirmationNumberTicketsLabel);
+        confirmationPageMainPanel.add(confirmationTotalLabel);
+        
+        confirmationPageMainPanel.add(actionBackAfterPurchaseButton);
+        
+        
+        
+        // Add Confirmation Page Panel to Main Panel
+		mainWindowPanel.add(confirmationPageMainPanel);
+		// End Confirmation Page Panel (screen)
 		
 		
 		/**
@@ -451,6 +773,112 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
         String actionCommand = e.getActionCommand( );
         
         if (actionCommand.equals(TicketPOSGUI.BUTTON_CAPTION_LOGIN)) {
+			
+			// From Login Form, Check username and password
+			
+//			// Get login form inputs
+//			String username = loginUsernameTextField.getText();
+//			String password = loginPasswordTextField.getText();
+//			
+//			if(username.equals(TicketPOSGUI.SECRET_USERNAME) && password.equals(TicketPOSGUI.SECRET_PASSWORD)) {
+//				logAdminIn();
+//				showPanel(adminMainPanel);
+//			} else {
+//				alert("Wrong username or password!", "Error");
+//			}
+        	
+        } else if(
+        		actionCommand.equals(TicketPOSGUI.BUTTON_CAPTION_CHOOSE_MOVIE_0) || actionCommand.equals(TicketPOSGUI.BUTTON_CAPTION_CHOOSE_MOVIE_10) ||
+        		actionCommand.equals(TicketPOSGUI.BUTTON_CAPTION_CHOOSE_MOVIE_1) || actionCommand.equals(TicketPOSGUI.BUTTON_CAPTION_CHOOSE_MOVIE_11) ||
+        		actionCommand.equals(TicketPOSGUI.BUTTON_CAPTION_CHOOSE_MOVIE_2) || actionCommand.equals(TicketPOSGUI.BUTTON_CAPTION_CHOOSE_MOVIE_12) ||
+        		actionCommand.equals(TicketPOSGUI.BUTTON_CAPTION_CHOOSE_MOVIE_3) || actionCommand.equals(TicketPOSGUI.BUTTON_CAPTION_CHOOSE_MOVIE_13) ||
+        		actionCommand.equals(TicketPOSGUI.BUTTON_CAPTION_CHOOSE_MOVIE_4) || actionCommand.equals(TicketPOSGUI.BUTTON_CAPTION_CHOOSE_MOVIE_14) ||
+        		actionCommand.equals(TicketPOSGUI.BUTTON_CAPTION_CHOOSE_MOVIE_5) || actionCommand.equals(TicketPOSGUI.BUTTON_CAPTION_CHOOSE_MOVIE_15) ||
+        		actionCommand.equals(TicketPOSGUI.BUTTON_CAPTION_CHOOSE_MOVIE_6) || actionCommand.equals(TicketPOSGUI.BUTTON_CAPTION_CHOOSE_MOVIE_16) ||
+        		actionCommand.equals(TicketPOSGUI.BUTTON_CAPTION_CHOOSE_MOVIE_7) || actionCommand.equals(TicketPOSGUI.BUTTON_CAPTION_CHOOSE_MOVIE_17) ||
+        		actionCommand.equals(TicketPOSGUI.BUTTON_CAPTION_CHOOSE_MOVIE_8) || actionCommand.equals(TicketPOSGUI.BUTTON_CAPTION_CHOOSE_MOVIE_18) ||
+        		actionCommand.equals(TicketPOSGUI.BUTTON_CAPTION_CHOOSE_MOVIE_9) || actionCommand.equals(TicketPOSGUI.BUTTON_CAPTION_CHOOSE_MOVIE_19) ||
+        		actionCommand.equals(TicketPOSGUI.BUTTON_CAPTION_CHOOSE_MOVIE_20)
+
+		) {
+			
+			// Choose Movie From Menu
+			String[] commandStringProcessed = actionCommand.split("_");
+			int movieIndex = Integer.valueOf(commandStringProcessed[1]);
+			showMovie(movieIndex);
+			// Display Order Page
+			showPanel(orderPageMainPanel);
+			orderResetForm();
+        	
+        } else if(actionCommand.equals(TicketPOSGUI.BUTTON_CAPTION_BACK)) {
+			
+			// From Order Page, Show Customer (Default) Panel (Screen)
+			showPanel(customerViewPanel);
+			// Reset selected movie
+			chosenMovieIndex = -1;
+			
+        } else if(actionCommand.equals(TicketPOSGUI.BUTTON_CAPTION_EXIT)) {
+			
+			// From Confirmation Page, Show Customer (Default) Panel (Screen)
+			showPanel(customerViewPanel);
+			// Reset current information and selected movie
+			chosenMovieIndex = -1;	
+			
+        } else if(actionCommand.equals(TicketPOSGUI.BUTTON_CAPTION_ORDER)) {
+			
+			// From Order Page, Process Payment, Order Tickets
+        	
+        	String firstName    = customerFirstNameTextField.getText();
+        	String lastName     = customerLastNameTextField.getText();
+        	String email        = customerEmailTextField.getText();
+        	Person customer     = new Person(firstName, lastName, email);
+        	
+        	int numberTickets   = Integer.valueOf(orderTicketsNumberTicketsSelectorBox.getSelectedItem().toString());
+        	String selectedTime = String.valueOf(orderTicketsTimeSelectorBox.getSelectedItem());
+        	
+        	String cardNumber   = cardNumberTextField.getText();
+        	String cardExpMonth = cardExpMonthTextField.getText();
+        	String cardExpYear  = cardExpYearTextField.getText();
+        	String cardZipCode  = cardZipTextField.getText();
+        	
+        	Payment payment     = new Payment(customer, numberTickets, cardNumber);
+        		 
+        	Ticket ticket       = new Ticket();
+        	
+        	ticket.setPerson(customer);
+        	ticket.setMovie(movies.get(chosenMovieIndex));
+        	ticket.setTime(selectedTime);
+        	ticket.setTotal(payment.getTotal());
+
+        	reservation.setTicketInfo(ticket);
+        	reservation.setNumberTickets(numberTickets);
+     
+//        	alert(reservation.toString(), "Reservation");
+        	
+        	// display confirmation details on confirmation page
+        	confirmationNumberLabel.setText(String.valueOf(reservation.getReservationNumber()));
+            confirmationEmailLabel.setText(reservation.getTicketInfo().getPerson().getEmail());
+            confirmationMovieLabel.setText(reservation.getTicketInfo().getMovie().getTitle());
+            confirmationTimeLabel.setText(String.valueOf(reservation.getTicketInfo().getTime()));
+            confirmationNumberTicketsLabel.setText(String.valueOf(reservation.getNumberTickets()));
+            confirmationTotalLabel.setText("$" + String.valueOf(reservation.getTicketInfo().getTotal()) + "0");
+        	
+			showPanel(confirmationPageMainPanel);
+			
+			// Add current reservation to reservations storage and reset current reservation
+			reservations.add(reservation);
+			reservation = new Reservation();
+			
+        } else if(actionCommand.equals(TicketPOSGUI.BUTTON_CAPTION_ORDER_TEST_VALUES)) {
+			
+			orderAddTestValues();
+			
+    	} else if(actionCommand.equals(TicketPOSGUI.BUTTON_CAPTION_ORDER_RESET_FORM)) {
+			
+    		orderResetForm();
+			
+        
+        } else if (actionCommand.equals(TicketPOSGUI.BUTTON_CAPTION_LOGIN)) {
 			
 			// From Login Form, Check username and password
 			
@@ -562,11 +990,20 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
 				alert("Sales View Screen", "Info");
 			}
 			
-			
 		} else if(actionCommand.equals(TicketPOSGUI.MENU_CUSTOMER_VIEW)) {
 			
     		// From Menu, Show Customer (Default) Panel (Screen)
 			showPanel(customerViewPanel);
+			
+		} else if(actionCommand.equals(TicketPOSGUI.MENU_ORDER_PAGE_VIEW)) {
+			
+    		// From Menu, Show Customer (Default) Panel (Screen)
+			showPanel(orderPageMainPanel);
+			
+		} else if(actionCommand.equals(TicketPOSGUI.MENU_CONFIRMATION_PAGE_VIEW)) {
+			
+			// From Menu, Show Customer (Default) Panel (Screen)
+			showPanel(confirmationPageMainPanel);
 			
 		} else if(actionCommand.equals(TicketPOSGUI.MENU_LOGIN_VIEW)) {
 			
@@ -628,6 +1065,62 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
     }
     
     
+    
+    public void showMovie(int movieIndex) {
+    	
+    	try {
+			ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+		    InputStream input = classLoader.getResourceAsStream("resources\\" + movies.get(movieIndex).getImage());
+		    // URL input = classLoader.getResource("image.png"); // <-- You can use URL class too.
+		    bufferedImage = ImageIO.read(input);
+		  } catch (Exception ex) {
+			System.out.println("resources\\" + movies.get(movieIndex).getImage());  
+		    System.out.println(ex);
+		  }
+        
+        ImageIcon icon = new ImageIcon(bufferedImage);
+        movieIconLabel.setIcon(icon);
+        
+        movieTitleLabel.setText(movies.get(movieIndex).getTitle());
+        movieDescriptionLabel.setMaximumSize(new Dimension(200,200));
+        
+        final String s = movies.get(movieIndex).getDescription();
+        final String html = "<html><body style='width: %1spx'>%1s";
+        final String formattedDescription = String.format(html, 200, s);
+        movieDescriptionLabel.setText(formattedDescription);
+        
+        String movieTimes = "";
+        for (int j = 0; j < movies.get(movieIndex).genres.size(); j++) {
+        	movieTimes += movies.get(movieIndex).genres.get(j).name.toUpperCase();
+    		if(j != (movies.get(movieIndex).genres.size() - 1)) {
+    			movieTimes += ", ";
+    		}
+		}
+        movieTimesLabel.setText(movieTimes);
+        
+        orderTicketsTimeSelectorBox.removeAllItems();
+//        System.out.println("MovieIndex:" + movieIndex);
+//        System.out.println("CountTimes:" + orderTicketsTimeSelectorBox.getItemCount());
+        orderTicketsTimeSelectorBox.addItem("Select Time");
+        for (int i = 0; i < movies.get(movieIndex).times.toArray().length; i++) {
+			orderTicketsTimeSelectorBox.addItem(movies.get(movieIndex).times.toArray()[i].toString());
+		}
+        
+    	String movieGenres = "";
+    	for (int j = 0; j < movies.get(movieIndex).times.size(); j++) {
+    		movieGenres += movies.get(movieIndex).times.get(j).toUpperCase();
+    		if(j != (movies.get(movieIndex).times.size() - 1)) {
+    			movieGenres += ", ";
+    		}
+		}    	
+        movieGenresLabel.setText(movieGenres);
+        
+        orderPageMainPanel.validate();
+		orderPageMainPanel.repaint(); 
+		chosenMovieIndex = movieIndex;
+    }
+    
+    
     /**
      * Helper function to hide all panels
      */
@@ -671,7 +1164,44 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
 		customerViewPanel.setVisible(false);
 		adminMainPanel.setVisible(false);
 		loginMainPanel.setVisible(false);
+		orderPageMainPanel.setVisible(false);
+		confirmationPageMainPanel.setVisible(false);
 	}
+    
+    /*
+    * Helper function to reset Ticket Form
+    */
+   public void orderResetForm() {
+		orderTicketsTimeSelectorBox.setSelectedIndex(0);
+		orderTicketsNumberTicketsSelectorBox.setSelectedIndex(0);
+		
+		customerFirstNameTextField.setText("");
+		customerLastNameTextField.setText("");
+		customerEmailTextField.setText("");
+		
+		cardNumberTextField.setText("");
+		cardExpMonthTextField.setText("");
+		cardExpYearTextField.setText("");
+		cardZipTextField.setText("");
+	}
+   
+   
+   	/*
+    * Populate Order Form With Test Values
+    */
+   	public void orderAddTestValues() {
+   		orderTicketsTimeSelectorBox.setSelectedIndex(1);
+   		orderTicketsNumberTicketsSelectorBox.setSelectedIndex(1);
+		
+		customerFirstNameTextField.setText("John");
+		customerLastNameTextField.setText("Doe");
+		customerEmailTextField.setText("john.doe@gmail.com");
+		
+		cardNumberTextField.setText("4111 1111 1111 1111");
+		cardExpMonthTextField.setText("11");
+		cardExpYearTextField.setText("22");
+		cardZipTextField.setText("55101");
+   	}
     
     
     /**
@@ -694,126 +1224,32 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
     
     public void loadDefaultData() {
     	
+    	// load movies
+    	for (Movie movie : DefaultData.movies) {
+//    		movies.put(movie.getTitle(), movie);
+    		movies.add(movie);
+    	}
+    	
+    	// load theaters
+    	for (Theater theater : DefaultData.theaters) {
+//    		theaters.put(theater.getName(), theater);
+    		theaters.add(theater);
+    	}
+    	
     	// load genres
-    	genres.add((new Genre("Action")));
-    	genres.add((new Genre("Drama")));
-    	genres.add((new Genre("Comedy")));
-    	genres.add((new Genre("Kids")));
-    	genres.add((new Genre("Horror")));
-    	genres.add((new Genre("Romance")));
-    	genres.add((new Genre("Sci-fi")));
-    	genres.add((new Genre("Animated")));
+    	for (Genre genre : DefaultData.genres) {
+//    		genres.put(genre.getName(), genre);
+    		genres.add(genre);
+    	}
     	
-    	times.add((new MovieTime("9:00a")));
-    	times.add((new MovieTime("11:00a")));
-    	times.add((new MovieTime("12:00p")));
-    	times.add((new MovieTime("1:00p")));
-    	times.add((new MovieTime("2:00p")));
-    	times.add((new MovieTime("3:00p")));
-    	times.add((new MovieTime("5:00p")));
-    	times.add((new MovieTime("6:00p")));
-    	times.add((new MovieTime("7:00p")));
-    	times.add((new MovieTime("9:00p")));
-    	times.add((new MovieTime("11:00p")));
+    	System.out.println(genres);
     	
-    	theaters.add((new Theater("Theater 1", 30)));
-    	theaters.add((new Theater("Theater 2", 40)));
-    	theaters.add((new Theater("Theater 3", 50)));
-    	
-    	movies.add(
-    			(new Movie("Doctor Sleep", 151, ""))
-    			.addGenre(new Genre("Horror"))
-    			.addGenre(new Genre("Suspense/Thriller"))
-    			.addTime("7:00p")
-    			.addTime("8:30p")
-    			.addTime("9:30p")
-    			.setImage("DoctorSleep2019.jpg")
-		);
-    	
-    	
-    	movies.add((new Movie("Last Christmas", 102, ""))
-    			.addGenre(new Genre("Comedy"))
-    			.addGenre(new Genre("Romance"))
-    			.addTime("7:00p")
-    			.addTime("9:30p")
-    			.setImage("LastChristmas2019.jpg")
-		);
-    	
-    	movies.add(
-    			(new Movie("Midway", 138, ""))
-    			.addGenre(new Genre("Action/Adventure"))
-    			.addGenre(new Genre("Drama"))
-    			.addGenre(new Genre("War"))
-    			.addTime("10:30p")
-    			.addTime("11:30p")
-    			.setImage("Midway.jpg")
-		);
-    	
-    	movies.add(
-    			(new Movie("Playing Fire", 96, ""))
-    			.addGenre(new Genre("Comedy"))
-    			.addGenre(new Genre("Family"))
-    			.addTime("7:00p")
-    			.addTime("11:30p")
-    			.setImage("PlayingWithFire.jpg")
-		);
-    	
-    	movies.add(
-    			(new Movie("Arctic Dogs", 100, ""))
-    			.addGenre(new Genre("Animated"))
-    			.addGenre(new Genre("Comedy"))
-    			.addGenre(new Genre("Family"))
-    			.addTime("8:00p")
-    			.addTime("10:00p")
-    			.setImage("ArcticDogs.jpg")
-		);
-    	
-    	movies.add(
-    			(new Movie("Terminator: Dark Fate", 128, ""))
-    			.addGenre(new Genre("Action/Adventure"))
-    			.addGenre(new Genre("Sci-Fi/Fantasy"))
-    			.addTime("8:00p")
-    			.addTime("10:00p")
-    			.setImage("TerminatorDarkFate.jpg")
-		);
-    	
-    	movies.add(
-    			(new Movie("Countdown", 90, ""))
-    			.addGenre(new Genre("Horror"))
-    			.addGenre(new Genre("Suspense/Thriller"))
-    			.addTime("9:30p")
-    			.addTime("11:00p")
-    			.setImage("Countdown.jpg")
-		);
-    	
-    	movies.add(
-    			(new Movie("Maleficent: Mistress Of Evil", 118, ""))
-    			.addGenre(new Genre("Action/Adventure"))
-    			.addGenre(new Genre("Family"))
-    			.addGenre(new Genre("Sci-Fi/Fantasy"))
-    			.addTime("10:30p")
-    			.setImage("Maleficent.jpg")
-    	);
-    	
-    	movies.add(
-    			(new Movie("The Adams Family", 87, ""))
-    			.addGenre(new Genre("Animated"))
-    			.addGenre(new Genre("Comedy"))
-    			.addGenre(new Genre("Family"))
-    			.addTime("8:30p")
-    			.setImage("AddamsFamily.jpg")
-		);
-    	
-    	movies.add(
-    			(new Movie("Joker", 122, ""))
-    			.addGenre(new Genre("Drama"))
-    			.addGenre(new Genre("Suspense/Thriller"))
-    			.addTime("7:30p")
-    			.addTime("9:00p")
-    			.setImage("Joker.jpg")
-		);
-    	
-    	
+    	// load genres
+    	for (String time : DefaultData.times) {
+//    		times.put(time, time);
+    		times.add(time);
+    	}
+   	
     }
     
     
@@ -833,6 +1269,15 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
         menuDemoCustomerViewitem.addActionListener(this);
         menuDemo.add(menuDemoCustomerViewitem);
         menuDemo.addSeparator();
+        
+//        menuDemoOrderPageViewitem = new JMenuItem(TicketPOSGUI.MENU_ORDER_PAGE_VIEW);
+//        menuDemoOrderPageViewitem.addActionListener(this);
+//        menuDemo.add(menuDemoOrderPageViewitem);
+//        
+//        menuDemoConfirmationPageViewitem = new JMenuItem(TicketPOSGUI.MENU_CONFIRMATION_PAGE_VIEW);
+//        menuDemoConfirmationPageViewitem.addActionListener(this);
+//        menuDemo.add(menuDemoConfirmationPageViewitem);
+//        menuDemo.addSeparator();
         
         menuLoginItem = new JMenuItem(MENU_LOGIN_VIEW);
         menuLoginItem.addActionListener(this);

@@ -9,12 +9,13 @@ public class MovieMenuItem {
 	
 	
 	
-	public MovieMenuItem (Movie movie, Theater theater, String time, int openSeats) {
+	public MovieMenuItem (Movie movie, Theater theater, String time) {
 		super();
 		this.movie = movie;
 		this.theater = theater;
 		this.time = time;
 		this.openSeats = openSeats;
+		this.openSeats = theater.getNumberSeats();
 	}
 
 
@@ -25,13 +26,9 @@ public class MovieMenuItem {
 	}
 
 
-
-
 	public void setMovie(Movie movie) {
 		this.movie = movie;
 	}
-
-
 
 
 	public Theater getTheater() {
@@ -39,21 +36,13 @@ public class MovieMenuItem {
 	}
 
 
-
-
 	public void setTheater(Theater theater) {
 		this.theater = theater;
 	}
 
-
-
-
 	public String getTime() {
 		return time;
 	}
-
-
-
 
 	public void setTime(String time) {
 		this.time = time;

@@ -7,7 +7,13 @@ public class Person {
 	String email;
 	
 	public Person() {
-		// TODO Auto-generated constructor stub
+		
+	}
+	
+	public Person(String firstName, String lastName, String email) {
+		this.firstName = firstName;
+		this.lastName = lastName;
+		this.email = email;
 	}
 	
 	public String getFirstName() {
