@@ -8,11 +8,21 @@ public class Ticket {
 	Movie   movie;
 	Theater theater;
 	Person  person;
+	String  time;
+	
 	double  total;
 	Date date;
 	
 	public Ticket() {
-		// TODO Auto-generated constructor stub
+
+	}
+	
+	public String getTime() {
+		return time;
+	}
+
+	public void setTime(String time) {
+		this.time = time;
 	}
 
 	public String getTicketNumber() {

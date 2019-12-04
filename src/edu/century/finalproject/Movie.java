@@ -35,8 +35,9 @@ public class Movie {
 		return description;
 	}
 
-	public void setDescription(String description) {
+	public Movie setDescription(String description) {
 		this.description = description;
+		return this;
 	}
 
 	public int getDuration() {

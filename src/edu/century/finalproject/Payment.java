@@ -7,9 +7,22 @@ public class Payment {
 	private String card;
 	private int numTickets;
 	
+	final double TICKET_PRICE = 5.0;
+	
+	public int getNumTickets() {
+		return numTickets;
+	}
+
+
+	public void setNumTickets(int numTickets) {
+		this.numTickets = numTickets;
+	}
+
+
 	public Payment(Person person,int numTickets, String card) {
 		this.person = person;
-		total= calculation(numTickets);
+		this.numTickets = numTickets;
+		total = calculation(numTickets);
 		this.card = card;
 	}
 	
@@ -45,8 +58,7 @@ public class Payment {
 	
 	public double calculation(int num) {
 		double total;
-		double price = 5.00;
-		total = num*price;
+		total = num * TICKET_PRICE;
 		return total;
 	}
 

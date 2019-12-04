@@ -7,8 +7,31 @@ public class Reservation {
 
 	private int reservationNumber;
 	private Ticket ticketInfo;
+	private int numberTickets;
 	private Date date;
+	
+	public Reservation() {
+		super();
+		Random ran = new Random();
+		this.reservationNumber = ran.nextInt(10000);
+	}
 
+	public Reservation(Ticket ticketInfo, Payment payment, Date date) {
+		super();
+		Random ran = new Random();
+		this.reservationNumber = ran.nextInt(10000);
+		this.ticketInfo = ticketInfo;
+		this.date = date;
+	}
+
+	public int getNumberTickets() {
+		return numberTickets;
+	}
+
+	public void setNumberTickets(int numberTickets) {
+		this.numberTickets = numberTickets;
+	}
+	
 	public int getReservationNumber() {
 		return reservationNumber;
 	}
@@ -32,15 +55,7 @@ public class Reservation {
 	public void setDate(Date date) {
 		this.date = date;
 	}
-
-	public Reservation(Ticket ticketInfo, Payment payment, Date date) {
-		super();
-		Random ran = new Random();
-		this.reservationNumber = ran.nextInt(10000);
-		this.ticketInfo = ticketInfo;
-		this.date = date;
-	}
-
+	
 	@Override
 	public String toString() {
 		return "Reservation [reservationNumber:" + reservationNumber + ", ticketInfo:" + ticketInfo.toString()

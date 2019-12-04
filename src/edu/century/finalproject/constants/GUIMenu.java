@@ -5,14 +5,16 @@ public interface GUIMenu {
 	/**
 	 * Customer Menu
 	 */
-	public static final String MENU_DEMO               = "Demo";
-	public static final String MENU_CUSTOMER_VIEW      = "Customer";
-	public static final String MENU_EXIT               = "Exit";
+	public static final String MENU_DEMO                    = "Demo";
+	public static final String MENU_CUSTOMER_VIEW           = "Customer";
+	public static final String MENU_ORDER_PAGE_VIEW         = "Order";
+	public static final String MENU_CONFIRMATION_PAGE_VIEW  = "Confirmation";
+	public static final String MENU_EXIT                    = "Exit";
 	
 	/**
 	 * Menu Log In
 	 */
-	public static final String MENU_LOGIN_VIEW         = "Log in";
+	public static final String MENU_LOGIN_VIEW              = "Log in";
 	
 	/**
 	 * Admin Menu
