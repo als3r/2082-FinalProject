@@ -2,20 +2,19 @@ package edu.century.finalproject;
 
 public class Person {
 
-	String firstName;
-	String lastName;
-	String email;
+	private String firstName;
+	private String lastName;
+	private String email;
 	
-	public Person() {
-		
-	}
+	
 	
 	public Person(String firstName, String lastName, String email) {
+		super();
 		this.firstName = firstName;
 		this.lastName = lastName;
 		this.email = email;
 	}
-	
+
 	public String getFirstName() {
 		return firstName;
 	}
@@ -42,7 +41,9 @@ public class Person {
 	
 	@Override
 	public String toString() {
-		return "Person [firstName=" + firstName + ", lastName=" + lastName + ", email=" + email + "]";
+		String x = " ";
+		
+		return String.format("Personal Information "+ "%n" +"%s" + "Name : " + firstName+ " " + lastName + "%n%s"+ "Email: " + email , x,x);
 	}
 	
 }

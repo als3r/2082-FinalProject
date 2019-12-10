@@ -7,31 +7,18 @@ public class Reservation {
 
 	private int reservationNumber;
 	private Ticket ticketInfo;
-	private int numberTickets;
 	private Date date;
-	
-	public Reservation() {
-		super();
-		Random ran = new Random();
-		this.reservationNumber = ran.nextInt(10000);
+	private String reserveDate;
+	public static int count;
+
+	public String getReserveDate() {
+		return reserveDate;
 	}
 
-	public Reservation(Ticket ticketInfo, Payment payment, Date date) {
-		super();
-		Random ran = new Random();
-		this.reservationNumber = ran.nextInt(10000);
-		this.ticketInfo = ticketInfo;
-		this.date = date;
+	public void setReserveDate(String reserveDate) {
+		this.reserveDate = reserveDate;
 	}
 
-	public int getNumberTickets() {
-		return numberTickets;
-	}
-
-	public void setNumberTickets(int numberTickets) {
-		this.numberTickets = numberTickets;
-	}
-	
 	public int getReservationNumber() {
 		return reservationNumber;
 	}
@@ -55,16 +42,46 @@ public class Reservation {
 	public void setDate(Date date) {
 		this.date = date;
 	}
+
+	public Reservation(Ticket ticketInfo) {
+		super();
+		count++;
+		this.reservationNumber = 32000+((count-1)*10) ;
+		this.ticketInfo = ticketInfo;
+		this.date = new Date();
+	}
 	
+	
+	
+	public int openSeat(Ticket ticketInfo) {
+		
+			int start = ticketInfo.getTheater().getNumberSeats();
+			int take = ticketInfo.getPay().getNumTickets();
+			int newSeats= start - take;
+			
+			if(newSeats == 0 || newSeats <=0) {
+				return 0;
+			}else
+				return newSeats;
+	}
+	
+	public int refundSeats(Ticket ticket) {
+		int start = ticketInfo.getTheater().getNumberSeats();
+		int take = ticketInfo.getPay().getNumTickets();
+		int newSeats= start + take;
+		
+		if(newSeats == 30 || newSeats >=30) {
+			return 30;
+		}else
+			return newSeats;
+	}
+
 	@Override
 	public String toString() {
-		return "Reservation [reservationNumber:" + reservationNumber + ", ticketInfo:" + ticketInfo.toString()
-				+ ", date=" + date + "]";
+		String x= " ";
+		return String.format("%5sReservation"+"%n-------------------------------"+ "%n%s"+ ticketInfo.getPerson().toString()+ "%n%s"+ ticketInfo.toString()+ "%n%s"+ "Reservation Date: "+
+		reserveDate, x,x,x,x);
 	}
 
-	public String toStringAdmin() {
-		return "Reservation [reservationNumber:" + reservationNumber + ", ticketInfo:" + ticketInfo.toString()
-				+ ", date=" + date + "]";
-	}
-
+	
 }

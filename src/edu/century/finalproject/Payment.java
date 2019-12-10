@@ -1,36 +1,22 @@
 package edu.century.finalproject;
 
 public class Payment {
-	
+
 	private Person person;
 	private double total;
 	private String card;
 	private int numTickets;
-	
-	final double TICKET_PRICE = 5.0;
-	
-	public int getNumTickets() {
-		return numTickets;
-	}
 
-
-	public void setNumTickets(int numTickets) {
-		this.numTickets = numTickets;
-	}
-
-
-	public Payment(Person person,int numTickets, String card) {
+	public Payment(Person person, int numTickets, String card) {
 		this.person = person;
-		this.numTickets = numTickets;
 		total = calculation(numTickets);
 		this.card = card;
+		this.numTickets = numTickets;
 	}
-	
 
 	public Payment() {
 		super();
 	}
-
 
 	public Person getPerson() {
 		return person;
@@ -55,21 +41,27 @@ public class Payment {
 	public void setCard(String card) {
 		this.card = card;
 	}
-	
+
+	public int getNumTickets() {
+		return numTickets;
+	}
+
+	public void setNumTickets(int numTickets) {
+		this.numTickets = numTickets;
+	}
+
 	public double calculation(int num) {
 		double total;
-		total = num * TICKET_PRICE;
+		double price = 5.00;
+		total = num * price;
 		return total;
 	}
 
 	
-	
-	
+
 	@Override
 	public String toString() {
 		return "Payment [person=" + person + ", total=" + total + ", card=" + card + "]";
 	}
-	
-	
 
 }

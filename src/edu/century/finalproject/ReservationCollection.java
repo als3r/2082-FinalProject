@@ -82,8 +82,20 @@ public class ReservationCollection {
 			reservation = TrimList;
 		}
 	}
-	//add search
-	
+	public Reservation search(int reserveNum) {
+		for(int i = 0; i < reservation.length; i++) {
+			if(reservation[i].getReservationNumber() == reserveNum)
+				return reservation[i];
+		}
+		return null;
+	}
+	public void remove(int reserveNum) {
+		for(int i = 0; i < reservation.length; i++) {
+			if(reservation[i].getReservationNumber() == reserveNum) {
+				reservation[i] = null;
+			}
+		}
+	}
 	@Override
 	public String toString() {
 		return "ReservationCollection [reservation=" + Arrays.toString(reservation) + ", itemCounter=" + itemCounter

@@ -71,19 +71,25 @@ public class MovieMenuCollection {
 			movie = TrimMovieList;
 		}
 	}
-	//add remove method
-	
-	
-	//add edit method
+
+	public void remove(String title) {
+		for (int i = 0; i < movie.length; i++) {
+			if (movie[i].getMovie().getTitle().equalsIgnoreCase(title))
+				movie[i] = null;
+		}
+	}
 
 	// working on search method by title
-	public MovieMenuItem searchMovie(String title, String genre) {
+	public MovieMenuItem searchMovie(String string) {
 		for (int i = 0; i < movie.length; i++) {
-			if (movie[i].getMovie().getTitle().equals(title))
+			if (movie[i].getMovie().getTitle().equalsIgnoreCase(string))
+				return movie[i];
+			else if (movie[i].getMovie().getGenres().equals(string))
 				return movie[i];
 		}
 		return null;
 	}
+
 	@Override
 	public String toString() {
 		return "MovieMenuCollection [movie=" + Arrays.toString(movie) + ", itemCounter=" + itemCounter + "]";

@@ -29,6 +29,7 @@ public class Theater {
 	public void setNumberSeats(int numberSeats) {
 		this.numberSeats = numberSeats;
 	}
+	
 
 	@Override
 	public String toString() {
