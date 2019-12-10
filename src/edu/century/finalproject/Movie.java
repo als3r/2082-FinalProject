@@ -2,8 +2,10 @@ package edu.century.finalproject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Collections;
 
-public class Movie {
+
+public class Movie implements Comparable<Movie> {
 
 	private String title;
 	private String description;
@@ -17,6 +19,16 @@ public class Movie {
 		this.title = title;
 		this.description = description;
 		this.duration = duration;
+	}
+	
+	public void sort() {
+		Collections.sort(times);
+	}
+	public void sortGenre() {
+		Collections.sort((List<Genre>) genres);
+	}
+	public void sortDuration() {
+		
 	}
 	
 	public Movie() {
@@ -35,9 +47,8 @@ public class Movie {
 		return description;
 	}
 
-	public Movie setDescription(String description) {
+	public void setDescription(String description) {
 		this.description = description;
-		return this;
 	}
 
 	public int getDuration() {
@@ -80,6 +91,11 @@ public class Movie {
 	@Override
 	public String toString() {
 		return "Movie [title=" + title + ", description=" + description + ", duration=" + duration + "]";
+	}
+
+	@Override
+	public int compareTo(Movie o) {
+		return this.getTitle().compareTo(o.getTitle());
 	}
 	
 	
