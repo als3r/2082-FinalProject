@@ -56,6 +56,14 @@ public interface GUIConstants {
 	public static final int NUMBER_OF_CHAR_INPUT_LARGE3 = 40;
 	
 	/**
+	 * Sort Options
+	 */
+	public static final String[] SORT_OPTIONS_ARRAY = 
+	{
+		"Select Sort", "Title"
+	};
+	
+	/**
 	 * Movie Genres
 	 */
 	public static final String[] GENRES_ARRAY = 
