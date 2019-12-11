@@ -6,16 +6,26 @@ public class Payment {
 	private double total;
 	private String card;
 	private int numTickets;
+	private double ticketPrice;
 
-	public Payment(Person person, int numTickets, String card) {
+	public Payment(Person person, int numTickets, String card, double price) {
 		this.person = person;
-		total = calculation(numTickets);
 		this.card = card;
 		this.numTickets = numTickets;
+		this.ticketPrice = price;
+		total = calculation(numTickets);
 	}
 
 	public Payment() {
 		super();
+	}
+	
+	public double getTicketPrice() {
+		return ticketPrice;
+	}
+
+	public void setTicketPrice(double ticketPrice) {
+		this.ticketPrice = ticketPrice;
 	}
 
 	public Person getPerson() {
@@ -51,9 +61,7 @@ public class Payment {
 	}
 
 	public double calculation(int num) {
-		double total;
-		double price = 5.00;
-		total = num * price;
+		total = num * ticketPrice;
 		return total;
 	}
 

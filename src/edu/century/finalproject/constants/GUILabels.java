@@ -13,7 +13,7 @@ public interface GUILabels {
 	public static final JLabel SORT_LABEL                  = new JLabel("Sort By");
 	
 	// Select Tickets Form
-	public static final JLabel SELECT_TICKETS_LABEL        = new JLabel("SELECT TICKETS ($5.00)");
+	public static final JLabel SELECT_TICKETS_LABEL        = new JLabel("SELECT TICKETS");
 	public static final JLabel TICKETS_AVAILABLE_LABEL     = new JLabel("Tickets:");
 	public static final JLabel SELECT_TICKETS_DATE_LABEL   = new JLabel("Date:");
 	public static final JLabel SELECT_TICKETS_TIME_LABEL   = new JLabel("Time:");

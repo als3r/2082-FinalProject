@@ -12,7 +12,7 @@ public class testing {
 		
 		System.out.println(theater1.toString());
 		person = new Person("John", "Doe", "Doe@email.com");
-		pay = new Payment(person, 31, "51515151");
+		pay = new Payment(person, 31, "51515151", 5);
 	
 		
 		movie1 = new Movie("Days Gone", 126, "Zombies");

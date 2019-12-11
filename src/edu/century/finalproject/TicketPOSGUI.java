@@ -24,6 +24,7 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import javax.swing.Action;
 
 import java.lang.IllegalArgumentException;
 import java.util.ArrayList;
@@ -42,6 +43,9 @@ import java.util.stream.Collectors;
 
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+
 
 // SendGrid
 import com.sendgrid.*;
@@ -132,6 +136,7 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
     private JLabel movieTimesLabel                = new JLabel();
     private JLabel movieGenresLabel               = new JLabel();
     private JLabel movieTicketsLeftLabel          = new JLabel();
+    private JLabel movieTicketsPriceLabel          = new JLabel();
     
     // Display Reservation Details on Confirmation Page
     private JLabel confirmationNumberLabel        = new JLabel();
@@ -527,6 +532,15 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
         mainLayout.putConstraint(SpringLayout.NORTH, movieMenuPanel, 10, SpringLayout.SOUTH, searchBarPanel);
         mainLayout.putConstraint(SpringLayout.SOUTH, movieMenuPanel, 10, SpringLayout.SOUTH, customerViewPanel);
         
+        searchMovieTextField.addKeyListener(new KeyAdapter() {
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode()==KeyEvent.VK_ENTER) {
+                   searchMovies();
+                }
+             }
+          });
+
+        
         // Change Font Size
         searchMovieTextField.setFont(TicketPOSGUI.FONT_16);
         
@@ -587,7 +601,10 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
         mainLayout.putConstraint(SpringLayout.NORTH, actionBackButton, TicketPOSGUI.LAYOUT_HEIGHT_1, SpringLayout.NORTH, orderPageMainPanel);
         mainLayout.putConstraint(SpringLayout.WEST,  TicketPOSGUI.SELECT_TICKETS_LABEL, TicketPOSGUI.LAYOUT_PADDING_14, SpringLayout.WEST, orderPageMainPanel);
         mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.SELECT_TICKETS_LABEL, TicketPOSGUI.LAYOUT_HEIGHT_1+20, SpringLayout.NORTH, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.WEST,  movieTicketsPriceLabel, TicketPOSGUI.LAYOUT_PADDING_1, SpringLayout.EAST, TicketPOSGUI.SELECT_TICKETS_LABEL);
+        mainLayout.putConstraint(SpringLayout.NORTH, movieTicketsPriceLabel, TicketPOSGUI.LAYOUT_HEIGHT_1+20, SpringLayout.NORTH, orderPageMainPanel);
         TicketPOSGUI.SELECT_TICKETS_LABEL.setFont(GUIFonts.FONT_18);
+        movieTicketsPriceLabel.setFont(GUIFonts.FONT_18);
         
         
         
@@ -671,6 +688,7 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
         orderPageMainPanel.add(TicketPOSGUI.SELECT_TICKETS_TIME_LABEL);
         orderPageMainPanel.add(TicketPOSGUI.SELECT_TICKETS_NUMBER_LABEL);
         orderPageMainPanel.add(movieTicketsLeftLabel);
+        orderPageMainPanel.add(movieTicketsPriceLabel);
         orderPageMainPanel.add(orderTicketsTimeSelectorBox);
         orderPageMainPanel.add(orderTicketsDateSelectorBox);
         orderPageMainPanel.add(orderTicketsNumberTicketsSelectorBox);
@@ -1194,7 +1212,7 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
                 	Person customer     = new Person(firstName, lastName, email);
                 	
                 	// Create Payment
-                	Payment payment     = new Payment(customer, numberTickets, cardNumber);
+                	Payment payment     = new Payment(customer, numberTickets, cardNumber, movieTicketPrice);
                 		 
                 	// Create Ticket
                 	Ticket ticket       = new Ticket();
@@ -1332,10 +1350,10 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
 				adminReservationsPanel.removeAll();
 				
 				// Column Names 
-		        String[] reservationsTableCollumn = { "Reservation Number", "Movie", "Date", "Time", "Theater", "First Name", "Last Name", "Email", "Total", "Reservation Time"}; 
+		        String[] reservationsTableCollumn = { "Reservation Number", "Movie", "Date", "Time", "Theater", "First Name", "Last Name", "Email", "Qty", "Total", "Reservation Time"}; 
 				
 		        // Data to be displayed in the JTable 
-				String[][] reservationsTableData = new String[reservations.size()][10]; 
+				String[][] reservationsTableData = new String[reservations.size()][11]; 
 				
 				
 				Iterator<Map.Entry<String, Reservation>> entries = reservations.entrySet().iterator();
@@ -1351,8 +1369,9 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
 					reservationsTableData[i][5] = String.valueOf(entry.getValue().getTicketInfo().getPerson().getFirstName());
 					reservationsTableData[i][6] = String.valueOf(entry.getValue().getTicketInfo().getPerson().getLastName());
 					reservationsTableData[i][7] = String.valueOf(entry.getValue().getTicketInfo().getPerson().getEmail());
-					reservationsTableData[i][8] = String.valueOf(entry.getValue().getTicketInfo().getPay().getTotal());
-					reservationsTableData[i][9] = String.valueOf(entry.getValue().getReserveDate());
+					reservationsTableData[i][8] = String.valueOf(entry.getValue().getTicketInfo().getPay().getNumTickets());
+					reservationsTableData[i][9] = String.valueOf(entry.getValue().getTicketInfo().getPay().getTotal());
+					reservationsTableData[i][10] = String.valueOf(entry.getValue().getReserveDate());
 		            
 					i++;
 				}
@@ -1371,7 +1390,8 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
 				table.getColumnModel().getColumn(6).setPreferredWidth(120);
 				table.getColumnModel().getColumn(7).setPreferredWidth(120);
 				table.getColumnModel().getColumn(8).setPreferredWidth(60);
-				table.getColumnModel().getColumn(9).setPreferredWidth(120);
+				table.getColumnModel().getColumn(9).setPreferredWidth(60);
+				table.getColumnModel().getColumn(10).setPreferredWidth(120);
 		        
 		        JScrollPane scrollPane = new JScrollPane(table);
 		        scrollPane.setPreferredSize(new Dimension(1200, 500));
@@ -1665,6 +1685,7 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
     	} else {
     		movieTicketsLeftLabel.setText("Only " + String.valueOf(availableTickets) + " seats left!");
     	}
+    	movieTicketsPriceLabel.setText("($" + String.valueOf(movieTicketPrice) + "0)");
     			
     	try {
 			ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
@@ -2037,15 +2058,7 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
         menuDemoCustomerViewitem.addActionListener(this);
         menuDemo.add(menuDemoCustomerViewitem);
         menuDemo.addSeparator();
-        
-//        menuDemoOrderPageViewitem = new JMenuItem(TicketPOSGUI.MENU_ORDER_PAGE_VIEW);
-//        menuDemoOrderPageViewitem.addActionListener(this);
-//        menuDemo.add(menuDemoOrderPageViewitem);
-//        
-//        menuDemoConfirmationPageViewitem = new JMenuItem(TicketPOSGUI.MENU_CONFIRMATION_PAGE_VIEW);
-//        menuDemoConfirmationPageViewitem.addActionListener(this);
-//        menuDemo.add(menuDemoConfirmationPageViewitem);
-//        menuDemo.addSeparator();
+ 
         
         menuLoginItem = new JMenuItem(MENU_LOGIN_VIEW);
         menuLoginItem.addActionListener(this);
@@ -2072,9 +2085,9 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
         menuAdminReservationsItem.addActionListener(this);
         menuAdmin.add(menuAdminReservationsItem);
         
-        menuAdminScheduleItem = new JMenuItem(MENU_ADMIN_SCHEDULE_VIEW);
-        menuAdminScheduleItem.addActionListener(this);
-        menuAdmin.add(menuAdminScheduleItem);
+//        menuAdminScheduleItem = new JMenuItem(MENU_ADMIN_SCHEDULE_VIEW);
+//        menuAdminScheduleItem.addActionListener(this);
+//        menuAdmin.add(menuAdminScheduleItem);
         
         menuAdminSettingsItem = new JMenuItem(MENU_ADMIN_SETTINGS_VIEW);
         menuAdminSettingsItem.addActionListener(this);
