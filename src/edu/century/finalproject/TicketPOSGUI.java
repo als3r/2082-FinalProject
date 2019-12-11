@@ -1015,30 +1015,34 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
 		            tempMap.put(aa.getKey(), aa.getValue()); 
 		        } 
 		        
-		        updateMovieMenu(tempMap);	
+		        if(tempMap.size() > 0) {  
+		        	updateMovieMenu(tempMap);
+		        }	
 		        
 	        } else if(sortBy.equalsIgnoreCase("Title DESC")) {        		
 	        		
-					// Create a list from elements of HashMap 
-			        List<Map.Entry<String, MovieMenuItem> > list = 
-			               new LinkedList<Map.Entry<String, MovieMenuItem> >(filteredCollection.entrySet()); 
-			  
-			        // Sort the list 
-			        Collections.sort(list, new Comparator<Map.Entry<String, MovieMenuItem> >() { 
-			            public int compare(Map.Entry<String, MovieMenuItem> o1,  
-			                               Map.Entry<String, MovieMenuItem> o2) 
-			            { 
-			                return -(o1.getValue()).compareTo(o2.getValue()); 
-			            } 
-			        }); 
-			          
-			        // put data from sorted list to hashmap  
-			        Map<String, MovieMenuItem> tempMap = new LinkedHashMap<String, MovieMenuItem>(); 
-			        for (Map.Entry<String, MovieMenuItem> aa : list) { 
-			            tempMap.put(aa.getKey(), aa.getValue()); 
-			        } 
-			        
-			        updateMovieMenu(tempMap);	
+				// Create a list from elements of HashMap 
+		        List<Map.Entry<String, MovieMenuItem> > list = 
+		               new LinkedList<Map.Entry<String, MovieMenuItem> >(filteredCollection.entrySet()); 
+		  
+		        // Sort the list 
+		        Collections.sort(list, new Comparator<Map.Entry<String, MovieMenuItem> >() { 
+		            public int compare(Map.Entry<String, MovieMenuItem> o1,  
+		                               Map.Entry<String, MovieMenuItem> o2) 
+		            { 
+		                return -(o1.getValue()).compareTo(o2.getValue()); 
+		            } 
+		        }); 
+		          
+		        // put data from sorted list to hashmap  
+		        Map<String, MovieMenuItem> tempMap = new LinkedHashMap<String, MovieMenuItem>(); 
+		        for (Map.Entry<String, MovieMenuItem> aa : list) { 
+		            tempMap.put(aa.getKey(), aa.getValue()); 
+		        } 
+		        
+		        if(tempMap.size() > 0) {  
+		        	updateMovieMenu(tempMap);
+		        }
 			
 			} else if(sortBy.equalsIgnoreCase("Duration")) {
 				
@@ -1062,7 +1066,9 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
 		            tempMap.put(aa.getKey(), aa.getValue()); 
 		        } 
 		        
-		        updateMovieMenu(tempMap);	
+		        if(tempMap.size() > 0) {  
+		        	updateMovieMenu(tempMap);
+		        }
 		        
 			} else if(sortBy.equalsIgnoreCase("Duration DESC")) {
 				
@@ -1086,10 +1092,14 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
 		            tempMap.put(aa.getKey(), aa.getValue()); 
 		        } 
 		        
-		        updateMovieMenu(tempMap);
+		        if(tempMap.size() > 0) {  
+		        	updateMovieMenu(tempMap);
+		        }
 				
-        	} else {        		
-        		updateMovieMenu(filteredCollection);	
+        	} else {        
+        		if(filteredCollection.size() > 0) {        			
+        			updateMovieMenu(filteredCollection);	
+        		}
         	}
 			
 			
