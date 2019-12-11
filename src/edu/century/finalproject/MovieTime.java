@@ -8,11 +8,32 @@ public class MovieTime {
 		this.time = time;
 	}
 
-	public String getTime() {
+	public String getTimeString() {
 		return time;
 	}
 
 	public void setTime(String time) {
 		this.time = time;
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+        if (obj == this) { 
+            return true; 
+        } 
+  
+        if (!(obj instanceof MovieTime)) { 
+            return false; 
+        } 
+          
+        MovieTime movieTime = (MovieTime) obj; 
+          
+        // Compare the data members and return accordingly  
+        return this.time.equalsIgnoreCase(movieTime.getTimeString());
+	}
+	
+	@Override
+	public String toString() {
+		return "MovieTime [time=" + time + "]";
 	}
 }

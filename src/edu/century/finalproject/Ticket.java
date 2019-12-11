@@ -16,6 +16,15 @@ public class Ticket {
 	public static int count;
 	
 	
+	public Ticket() {
+		super();
+		count++;
+		NumberFormat usd = NumberFormat.getCurrencyInstance();
+		this.ticketNumber = 1000+((count-1)*5);
+		this.date = new Date();
+	}
+	
+	
 	public Ticket( Movie movie, Theater theater, Person person,Payment pay) {
 		super();
 		count++;

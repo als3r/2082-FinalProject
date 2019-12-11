@@ -21,7 +21,7 @@ public class testing {
 
 		Reservation reserve1 = new Reservation(ticket1);
 		reserve1.setReserveDate("12/05/19");
-		theater1.setNumberSeats(reserve1.openSeat(ticket1));
+		theater1.setCapacity(reserve1.openSeat(ticket1));
 
 		System.out.println(theater1.toString());
 		System.out.println(ticket1.toString());

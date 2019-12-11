@@ -20,8 +20,6 @@ import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.border.TitledBorder;
 
-import com.sun.org.apache.bcel.internal.generic.NEW;
-
 import javax.swing.border.EtchedBorder;
 import javax.swing.Action;
 import javax.imageio.ImageIO;
@@ -43,6 +41,12 @@ import java.lang.IllegalArgumentException;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
+
+import java.util.Iterator;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 
 /**
@@ -69,11 +73,10 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
 	 */
 	private boolean isAdmin = false;
 	
-    
     /**
      * JTextField for Movie Search
      */
-    public JTextField searchMovieTextField        = new JTextField(NUMBER_OF_CHAR_INPUT_LARGE3);
+    public JTextField searchMovieTextField        = new JTextField(NUMBER_OF_CHAR_INPUT_LARGE2);
     
     /**
      * JTextField for Customer Info
@@ -140,8 +143,7 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
      */
 //    private Hashtable<String, Movie> movies = new Hashtable<String, Movie>();
     private List<Movie> movies = new ArrayList<>();
-//    private MovieMenuCollection movieCollection = new MovieMenuCollection();
-
+    private MovieMenuCollection movieMenu = new MovieMenuCollection();
     
     /**
      * To Store current reservation
@@ -151,7 +153,7 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
     /**
      * To Store chosen movie, negative value = not chosen
      */
-    private int chosenMovieIndex = -1;
+    private String chosenMovieIndex = "";
     
     /**
      * To Store reservation and search by Reservation number
@@ -178,6 +180,11 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
      * JComboBox for period selector
      */
     private JComboBox<String> orderTicketsNumberTicketsSelectorBox = new JComboBox(GUIConstants.NUMBER_TICKETS_ARRAY); 
+    
+    /**
+     * JComboBox for sort selector
+     */
+    private JComboBox<String> sortMoviesSelectorBox = new JComboBox(GUIConstants.SORT_OPTIONS_ARRAY); 
     
     
     /**
@@ -217,6 +224,7 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
 	// (view from customer perspective)
 	JPanel movieMenuPanel;
 	JPanel movieMenuContentPanel;
+	JScrollPane movieMenuScrollPanel;
 	JPanel searchBarPanel;
 	
 	// Sub panel of mainPanel 
@@ -234,6 +242,8 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
 	
 	// Confirmation page
 	JPanel confirmationPageMainPanel;
+	
+	public String defaultDate = "2019-12-11";
 	
     
     /**
@@ -262,7 +272,7 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
         // loading top menu
         loadMenu();
         
-        System.out.println(genres);
+//        System.out.println(genres);
         
 //        System.out.println(movies);
 //        System.out.println(genres);
@@ -270,10 +280,10 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
 //        System.out.println(times);
         
         loadDefaultData();
-        //load comboboxes
+        // load comboboxes
         String[] arrayGenres = new String[genres.size()];
         for (int i = 0; i < genres.size(); i++) {
-        	arrayGenres[i] = genres.get(i).getName();
+        	arrayGenres[i] = genres.get(i).getGenreName();
 		}
         genreSelectorBox = new JComboBox(arrayGenres);
 //        genreSelectorBox = new JComboBox();
@@ -309,6 +319,10 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
         JButton actionSearchButton = new JButton(BUTTON_CAPTION_SEARCH);
         actionSearchButton.addActionListener(this);
         
+        // Sort
+        JButton actionSortButton = new JButton(BUTTON_CAPTION_SORT);
+        actionSortButton.addActionListener(this);
+        
         // Login
         JButton actionLoginButton = new JButton(BUTTON_CAPTION_LOGIN);
         actionLoginButton.addActionListener(this);
@@ -340,85 +354,37 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
          */
         // Set Customer Panel Position Inside Main Window Panel
         customerViewPanel = new JPanel ();
-        customerViewPanel.setBorder( new TitledBorder ( new EtchedBorder (), "Customer View" ) );
+        customerViewPanel.setBorder( new TitledBorder ( new EtchedBorder (), "" ) ); // Customer View
         customerViewPanel.setLayout(mainLayout);
         
         // Content block of the movies where we add movies
         searchBarPanel = new JPanel ();
-        searchBarPanel.setBorder( new TitledBorder ( new EtchedBorder (), "searchBarPanel" ) );
+//        searchBarPanel.setBorder( new TitledBorder ( new EtchedBorder (), "" ) ); // searchBarPanel
+        searchBarPanel.setLayout(mainLayout);
 //        searchBarPanel.setPreferredSize(new Dimension(1000, 70));
         
         // Sub Panel of Customer Panel where movie menu will be displayed
         movieMenuPanel = new JPanel ();
-        movieMenuPanel.setBorder( new TitledBorder ( new EtchedBorder (), "movieMenuMainPanel" ) );
+//        movieMenuPanel.setBorder( new TitledBorder ( new EtchedBorder (), "" ) ); // movieMenuMainPanel
 //        movieMenuPanel.setPreferredSize(new Dimension(1000, 600));
         
         // Content block of the movies where we add movies
         movieMenuContentPanel = new JPanel ();
-        movieMenuContentPanel.setBorder( new TitledBorder ( new EtchedBorder (), "movieMenuContentPanel" ) );
+//        movieMenuContentPanel.setBorder( new TitledBorder ( new EtchedBorder (), "movieMenuContentPanel" ) ); //movieMenuContentPanel
         movieMenuContentPanel.setLayout(gridLayoutMovie);
 //        movieMenuContentPanel.setPreferredSize(new Dimension(1000, 600));
         
-        // Add buttons to content block
-        JButton button;
-        String buttonText = "";
         
-        for (int i = 0; i < movies.size(); i++) {
-        	buttonText = "";
-        	buttonText += movies.get(i).getTitle().toUpperCase() + "\n" + "\n";
-        	buttonText += "\n";
-        	buttonText += "Duration: " + movies.get(i).getDuration() + " mins \n" + "\n";
-        	buttonText += "\n";
-        	for (int j = 0; j < movies.get(i).genres.size(); j++) {
-        		buttonText += movies.get(i).genres.get(j).name.toUpperCase();
-        		if(j != (movies.get(i).genres.size() - 1)) {
-        			buttonText += ", ";
-        		}
-			}
-        	buttonText += "\n" + "\n";
-        	
-        	for (int j = 0; j < movies.get(i).times.size(); j++) {
-        		buttonText += movies.get(i).times.get(j).toUpperCase();
-        		if(j != (movies.get(i).times.size() - 1)) {
-        			buttonText += ", ";
-        		}
-			}
-        	buttonText += "\n";
-        	
-			button = new JButton();
-			button.setMargin(new Insets(0,0,0,0));
-			button.setHorizontalAlignment(SwingConstants.LEFT);
-			button.setAlignmentY(TOP_ALIGNMENT);
-			button.setActionCommand("ChooseMovie_" + i);
-			button.addActionListener(this);
-			try {
-				
-				System.out.println("resources\\" + movies.get(i).getImage());
-				
-				ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-			    InputStream input = classLoader.getResourceAsStream("resources\\" + movies.get(i).getImage());
-			    // URL input = classLoader.getResource("image.png"); // <-- You can use URL class too.
-			    bufferedImage = ImageIO.read(input);
-
-			    button.setIcon(new ImageIcon(bufferedImage));
-			  } catch (Exception ex) {
-			    System.out.println(ex);
-			  }
-			
-			button.setText("<html>" + buttonText.replaceAll("\\n", "<br>") + "</html>");
-			button.setPreferredSize(TicketPOSGUI.SIZE_150_300);
-			movieMenuContentPanel.add(button);
-		}
-        
+        displayMovieMenu();
         
         // Add Scroll Panel to content block
-        JScrollPane movieMenuScrollPanel = new JScrollPane(
+        movieMenuScrollPanel = new JScrollPane(
         		movieMenuContentPanel, 
         		ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,  
         		ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED
 		);
-        movieMenuScrollPanel.setMinimumSize(new Dimension(1160, 580));
-        movieMenuScrollPanel.setPreferredSize(new Dimension(1160, 580));
+        movieMenuScrollPanel.setMinimumSize(new Dimension(1160, 620));
+        movieMenuScrollPanel.setPreferredSize(new Dimension(1160, 620));
         movieMenuScrollPanel.getVerticalScrollBar().setUnitIncrement(25);
         
         
@@ -431,8 +397,8 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
         
         mainLayout.putConstraint(SpringLayout.WEST,  searchBarPanel, 0, SpringLayout.WEST, customerViewPanel);
         mainLayout.putConstraint(SpringLayout.EAST,  searchBarPanel, 0, SpringLayout.EAST, customerViewPanel);
-//        mainLayout.putConstraint(SpringLayout.NORTH, searchBarPanel, 0, SpringLayout.NORTH, customerMainPanel);
-//        mainLayout.putConstraint(SpringLayout.SOUTH, searchBarContentPanel, 0, SpringLayout.SOUTH, customerMainPanel); 
+        mainLayout.putConstraint(SpringLayout.NORTH, searchBarPanel, 0, SpringLayout.NORTH, customerViewPanel);
+        mainLayout.putConstraint(SpringLayout.SOUTH, searchBarPanel, 40, SpringLayout.NORTH, customerViewPanel); 
         
         // Set position of the elements inside Customer Panel/Screen
         // Row 1 - Search Form
@@ -451,11 +417,18 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
         mainLayout.putConstraint(SpringLayout.WEST,  actionSearchButton,             TicketPOSGUI.LAYOUT_PADDING_1, SpringLayout.EAST,  timeSelectorBox);
         mainLayout.putConstraint(SpringLayout.NORTH, actionSearchButton,             TicketPOSGUI.LAYOUT_HEIGHT_1,  SpringLayout.NORTH, searchBarPanel);
         
+        mainLayout.putConstraint(SpringLayout.WEST,  TicketPOSGUI.SORT_LABEL,        TicketPOSGUI.LAYOUT_PADDING_2, SpringLayout.EAST,  actionSearchButton);
+        mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.SORT_LABEL,        TicketPOSGUI.LAYOUT_HEIGHT_1+3,  SpringLayout.NORTH, searchBarPanel);
+        mainLayout.putConstraint(SpringLayout.WEST,  sortMoviesSelectorBox,          TicketPOSGUI.LAYOUT_PADDING_1, SpringLayout.EAST,  TicketPOSGUI.SORT_LABEL);
+        mainLayout.putConstraint(SpringLayout.NORTH, sortMoviesSelectorBox,          TicketPOSGUI.LAYOUT_HEIGHT_1,  SpringLayout.NORTH, searchBarPanel);
+        mainLayout.putConstraint(SpringLayout.WEST,  actionSortButton,               TicketPOSGUI.LAYOUT_PADDING_1, SpringLayout.EAST,  sortMoviesSelectorBox);
+        mainLayout.putConstraint(SpringLayout.NORTH, actionSortButton,               TicketPOSGUI.LAYOUT_HEIGHT_1,  SpringLayout.NORTH, searchBarPanel);
+        
         // Set Customer Panel/Screen position inside Main Window Panel
         mainLayout.putConstraint(SpringLayout.WEST,  movieMenuPanel, 0, SpringLayout.WEST,  customerViewPanel);
         mainLayout.putConstraint(SpringLayout.EAST,  movieMenuPanel, 0, SpringLayout.EAST,  customerViewPanel);
-//        mainLayout.putConstraint(SpringLayout.NORTH, movieMenuMainPanel, 50, SpringLayout.NORTH, customerMainPanel);
-        mainLayout.putConstraint(SpringLayout.SOUTH, movieMenuPanel, 0, SpringLayout.SOUTH, customerViewPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, movieMenuPanel, 10, SpringLayout.SOUTH, searchBarPanel);
+        mainLayout.putConstraint(SpringLayout.SOUTH, movieMenuPanel, 10, SpringLayout.SOUTH, customerViewPanel);
         
         // Change Font Size
         searchMovieTextField.setFont(TicketPOSGUI.FONT_16);
@@ -468,6 +441,9 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
         searchBarPanel.add(TicketPOSGUI.TIMES_LABEL);
         searchBarPanel.add(timeSelectorBox);
         searchBarPanel.add(actionSearchButton);
+        searchBarPanel.add(TicketPOSGUI.SORT_LABEL);
+        searchBarPanel.add(sortMoviesSelectorBox);
+        searchBarPanel.add(actionSortButton);
         
         movieMenuPanel.add(movieMenuScrollPanel);
 
@@ -776,53 +752,30 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
 			
 			// From Login Form, Check username and password
 			
-//			// Get login form inputs
-//			String username = loginUsernameTextField.getText();
-//			String password = loginPasswordTextField.getText();
-//			
-//			if(username.equals(TicketPOSGUI.SECRET_USERNAME) && password.equals(TicketPOSGUI.SECRET_PASSWORD)) {
-//				logAdminIn();
-//				showPanel(adminMainPanel);
-//			} else {
-//				alert("Wrong username or password!", "Error");
-//			}
-        	
-        } else if(
-        		actionCommand.equals(TicketPOSGUI.BUTTON_CAPTION_CHOOSE_MOVIE_0) || actionCommand.equals(TicketPOSGUI.BUTTON_CAPTION_CHOOSE_MOVIE_10) ||
-        		actionCommand.equals(TicketPOSGUI.BUTTON_CAPTION_CHOOSE_MOVIE_1) || actionCommand.equals(TicketPOSGUI.BUTTON_CAPTION_CHOOSE_MOVIE_11) ||
-        		actionCommand.equals(TicketPOSGUI.BUTTON_CAPTION_CHOOSE_MOVIE_2) || actionCommand.equals(TicketPOSGUI.BUTTON_CAPTION_CHOOSE_MOVIE_12) ||
-        		actionCommand.equals(TicketPOSGUI.BUTTON_CAPTION_CHOOSE_MOVIE_3) || actionCommand.equals(TicketPOSGUI.BUTTON_CAPTION_CHOOSE_MOVIE_13) ||
-        		actionCommand.equals(TicketPOSGUI.BUTTON_CAPTION_CHOOSE_MOVIE_4) || actionCommand.equals(TicketPOSGUI.BUTTON_CAPTION_CHOOSE_MOVIE_14) ||
-        		actionCommand.equals(TicketPOSGUI.BUTTON_CAPTION_CHOOSE_MOVIE_5) || actionCommand.equals(TicketPOSGUI.BUTTON_CAPTION_CHOOSE_MOVIE_15) ||
-        		actionCommand.equals(TicketPOSGUI.BUTTON_CAPTION_CHOOSE_MOVIE_6) || actionCommand.equals(TicketPOSGUI.BUTTON_CAPTION_CHOOSE_MOVIE_16) ||
-        		actionCommand.equals(TicketPOSGUI.BUTTON_CAPTION_CHOOSE_MOVIE_7) || actionCommand.equals(TicketPOSGUI.BUTTON_CAPTION_CHOOSE_MOVIE_17) ||
-        		actionCommand.equals(TicketPOSGUI.BUTTON_CAPTION_CHOOSE_MOVIE_8) || actionCommand.equals(TicketPOSGUI.BUTTON_CAPTION_CHOOSE_MOVIE_18) ||
-        		actionCommand.equals(TicketPOSGUI.BUTTON_CAPTION_CHOOSE_MOVIE_9) || actionCommand.equals(TicketPOSGUI.BUTTON_CAPTION_CHOOSE_MOVIE_19) ||
-        		actionCommand.equals(TicketPOSGUI.BUTTON_CAPTION_CHOOSE_MOVIE_20)
-
-		) {
+			// Get login form inputs
+			String username = loginUsernameTextField.getText();
+			String password = loginPasswordTextField.getText();
 			
-			// Choose Movie From Menu
-			String[] commandStringProcessed = actionCommand.split("_");
-			int movieIndex = Integer.valueOf(commandStringProcessed[1]);
-			showMovie(movieIndex);
-			// Display Order Page
-			showPanel(orderPageMainPanel);
-			orderResetForm();
-        	
+			if(username.equals(TicketPOSGUI.SECRET_USERNAME) && password.equals(TicketPOSGUI.SECRET_PASSWORD)) {
+				logAdminIn();
+				showPanel(adminMainPanel);
+			} else {
+				alert("Wrong username or password!", "Error");
+			}
+        	        	
         } else if(actionCommand.equals(TicketPOSGUI.BUTTON_CAPTION_BACK)) {
 			
 			// From Order Page, Show Customer (Default) Panel (Screen)
 			showPanel(customerViewPanel);
 			// Reset selected movie
-			chosenMovieIndex = -1;
+			chosenMovieIndex = "";
 			
         } else if(actionCommand.equals(TicketPOSGUI.BUTTON_CAPTION_EXIT)) {
 			
 			// From Confirmation Page, Show Customer (Default) Panel (Screen)
 			showPanel(customerViewPanel);
 			// Reset current information and selected movie
-			chosenMovieIndex = -1;	
+			chosenMovieIndex = "";	
 			
         } else if(actionCommand.equals(TicketPOSGUI.BUTTON_CAPTION_ORDER)) {
 			
@@ -846,12 +799,12 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
         	Ticket ticket       = new Ticket();
         	
         	ticket.setPerson(customer);
-        	ticket.setMovie(movies.get(chosenMovieIndex));
-        	ticket.setTime(selectedTime);
-        	ticket.setTotal(payment.getTotal());
+        	ticket.setMovie(movieMenu.getMenuItems().get(chosenMovieIndex).getMovie());
+//        	ticket.setTime(selectedTime);
+//        	ticket.setTotal(payment.getTotal());
 
         	reservation.setTicketInfo(ticket);
-        	reservation.setNumberTickets(numberTickets);
+//        	reservation.setNumberTickets(numberTickets);
      
 //        	alert(reservation.toString(), "Reservation");
         	
@@ -859,8 +812,8 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
         	confirmationNumberLabel.setText(String.valueOf(reservation.getReservationNumber()));
             confirmationEmailLabel.setText(reservation.getTicketInfo().getPerson().getEmail());
             confirmationMovieLabel.setText(reservation.getTicketInfo().getMovie().getTitle());
-            confirmationTimeLabel.setText(String.valueOf(reservation.getTicketInfo().getTime()));
-            confirmationNumberTicketsLabel.setText(String.valueOf(reservation.getNumberTickets()));
+//            confirmationTimeLabel.setText(String.valueOf(reservation.getTicketInfo().getTime()));
+//            confirmationNumberTicketsLabel.setText(String.valueOf(reservation.getNumberTickets()));
             confirmationTotalLabel.setText("$" + String.valueOf(reservation.getTicketInfo().getTotal()) + "0");
         	
 			showPanel(confirmationPageMainPanel);
@@ -902,13 +855,40 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
 			String searchGenre  = String.valueOf(genreSelectorBox.getSelectedItem());
 			String searchTime   = String.valueOf(timeSelectorBox.getSelectedItem());
 			
-			//@TODO temporarily show search input
-			String message = "";
-			message += "Search String: '" + searchString + "'" + "\n";
-			message += "Selected Genre: " + searchGenre  + "\n";
-			message += "Selected Time: "  + searchTime   + "\n";
+			searchString = searchString.equalsIgnoreCase("")      ? "" : searchString;
+			searchGenre  = searchGenre.equalsIgnoreCase("Select") ? "" : searchGenre;
+			searchTime   = searchTime.equalsIgnoreCase("Select")  ? "" : searchTime;
 			
-			alert(message, "Info");
+			Map<String, MovieMenuItem> filteredCollection;
+			
+			if(searchGenre.isEmpty() && searchTime.isEmpty()) {				
+				filteredCollection = movieMenu.search(searchString);
+			} else if (searchGenre.isEmpty()) {
+				MovieTime time = new MovieTime(searchTime);
+				System.out.println(searchTime);
+				System.out.println(time);
+				filteredCollection = movieMenu.search(searchString, time);
+				System.out.println(filteredCollection);
+			} else if (searchTime.isEmpty()) {
+				Genre genre = new Genre(searchGenre);
+				filteredCollection = movieMenu.search(searchString, genre);
+			} else {
+				Genre genre = new Genre(searchGenre);
+				MovieTime time = new MovieTime(searchTime);
+				filteredCollection = movieMenu.search(searchString, genre, time);
+			}
+			
+						
+			updateMovieMenu(filteredCollection);	
+			
+			if (filteredCollection.size() == 0) {
+				String message = "Oops. Couldn't find movies. Please try something else." + "\n";
+				message += "Search String: '" + searchString + "'" + "\n";
+				message += "Selected Genre: " + searchGenre  + "\n";
+				message += "Selected Time: "  + searchTime   + "\n";
+				
+				alert(message, "Info");
+			}
 			
 		} else if(actionCommand.equals(TicketPOSGUI.MENU_ADMIN_MOVIES_VIEW)) {
 			
@@ -1024,15 +1004,143 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
         	
 	    } else {
 	    	
-	    	// Could not find action
-	    	alert("Unexpected error. Could not find Action Handler for '" + actionCommand + "'", "Error");
+	    	
+	    	if(actionCommand.toLowerCase().contains("OpenMovie_".toLowerCase())) {
+	    		
+//	    		alert("Open Movie '" + actionCommand + "'", "Error");
+	    		
+	    		// Choose Movie From Menu
+				String[] commandStringProcessed = actionCommand.split("_");
+				String movieTitle = commandStringProcessed[1];
+				showMovie(movieTitle);
+				// Display Order Page
+				showPanel(orderPageMainPanel);
+				orderResetForm();
+	    		
+	    	} else {	    		
+	    		// Could not find action
+	    		alert("Unexpected error. Could not find Action Handler for '" + actionCommand + "'", "Error");
+	    	}
+	    	
         }
     }
     
     
-
-   
+    public void updateMovieMenu(Map<String, MovieMenuItem> filteredCollection) {
+    	
+    	movieMenuContentPanel.removeAll();
+    	
+    	// Add buttons to content block
+    	JButton                      button;
+        String                       buttonText = "";
+        Movie                        movie;
+        List<MovieScheduleItem>      times;
+                
+        Iterator<Map.Entry<String, MovieMenuItem>> it = filteredCollection.entrySet().iterator();
+        
+        while (it.hasNext()) {
+            Map.Entry<String, MovieMenuItem> pair = it.next();
+            
+            movie      = pair.getValue().getMovie();
+            times      = pair.getValue().getSchedule().get(defaultDate).getTimes();
+			button     = createMenuButton(movie, times);
+			movieMenuContentPanel.add(button);
+        }
+        
+        movieMenuContentPanel.validate();
+        movieMenuContentPanel.repaint();
+        movieMenuScrollPanel.validate();
+        movieMenuScrollPanel.repaint();
+        customerViewPanel.validate();
+        customerViewPanel.repaint(); 
+    }
     
+    
+    
+    public void displayMovieMenu() {
+    	
+    	movieMenuContentPanel.removeAll();
+    	
+    	// Add buttons to content block
+        JButton                      button;
+        String                       buttonText = "";
+        Movie                        movie;
+        List<MovieScheduleItem>      times;
+                
+        Iterator<Map.Entry<String, MovieMenuItem>> it = movieMenu.getMenuItems().entrySet().iterator();
+        
+        while (it.hasNext()) {
+            Map.Entry<String, MovieMenuItem> pair = it.next();
+            
+            movie      = pair.getValue().getMovie();
+            times      = pair.getValue().getSchedule().get(defaultDate).getTimes();
+			button     = createMenuButton(movie, times);
+			movieMenuContentPanel.add(button);
+        }
+        
+        movieMenuContentPanel.validate();
+        movieMenuContentPanel.repaint();
+        customerViewPanel.validate();
+        customerViewPanel.repaint(); 
+    }
+    
+    
+    
+    private JButton createMenuButton(Movie movie, List<MovieScheduleItem> times) {
+    	
+    	String  buttonText = createMenuButtonText(movie, times);
+    	JButton button = new JButton();
+		button.setMargin(new Insets(0,0,0,0));
+		button.setHorizontalAlignment(SwingConstants.LEFT);
+		button.setAlignmentY(TOP_ALIGNMENT);
+//		button.setActionCommand("ChooseMovie_" + key);
+		button.setActionCommand("OpenMovie_" + movie.getTitle());
+		button.addActionListener(this);
+		try {
+			ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+		    InputStream input = classLoader.getResourceAsStream("resources\\" + movie.getImage());
+		    // URL input = classLoader.getResource("image.png"); // <-- You can use URL class too.
+		    bufferedImage = ImageIO.read(input);
+
+		    button.setIcon(new ImageIcon(bufferedImage));
+		  } catch (Exception ex) {
+		    System.out.println(ex);
+		  }
+		
+		button.setText("<html>" + buttonText.replaceAll("\\n", "<br>") + "</html>");
+		button.setPreferredSize(TicketPOSGUI.SIZE_150_300);
+		button.setSize(TicketPOSGUI.SIZE_150_300);
+    	
+    	return button;
+    }
+    
+    
+    private String createMenuButtonText(Movie movie, List<MovieScheduleItem> times) {
+    	
+    	String  buttonText = "";
+    	buttonText += movie.getTitle().toUpperCase() + "\n" + "\n";
+    	buttonText += "\n";
+    	buttonText += "Duration: " + movie.getDuration() + " mins \n" + "\n";
+    	buttonText += "\n";
+    	for (int j = 0; j < movie.genres.size(); j++) {
+    		buttonText += movie.genres.get(j).name.toUpperCase();
+    		if(j != (movie.genres.size() - 1)) {
+    			buttonText += ", ";
+    		}
+		}
+    	buttonText += "\n" + "\n";
+    	
+    	for (int j = 0; j < times.size(); j++) {
+    		buttonText += times.get(j).getMovieTime().getTimeString().toUpperCase();
+    		if(j != (times.size() - 1)) {
+    			buttonText += ", ";
+    		}
+		}
+    	buttonText += "\n";
+    	
+    	return buttonText;
+    }
+
     
     /**
      * Validate report form
@@ -1066,50 +1174,53 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
     
     
     
-    public void showMovie(int movieIndex) {
+    public void showMovie(String movieTitle) {
+    	
+    	MovieMenuItem           movieMenuItem = movieMenu.getMenuItems().get(movieTitle);
+    	List<MovieScheduleItem> times         = movieMenuItem.getSchedule().get(defaultDate).getTimes();
+    	Movie                   movie         = movieMenu.getMenuItems().get(movieTitle).getMovie();
     	
     	try {
 			ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-		    InputStream input = classLoader.getResourceAsStream("resources\\" + movies.get(movieIndex).getImage());
+		    InputStream input = classLoader.getResourceAsStream("resources\\" + movie.getImage());
 		    // URL input = classLoader.getResource("image.png"); // <-- You can use URL class too.
 		    bufferedImage = ImageIO.read(input);
 		  } catch (Exception ex) {
-			System.out.println("resources\\" + movies.get(movieIndex).getImage());  
+			System.out.println("resources\\" + movie.getImage());  
 		    System.out.println(ex);
 		  }
         
         ImageIcon icon = new ImageIcon(bufferedImage);
         movieIconLabel.setIcon(icon);
         
-        movieTitleLabel.setText(movies.get(movieIndex).getTitle());
+        movieTitleLabel.setText(movie.getTitle());
         movieDescriptionLabel.setMaximumSize(new Dimension(200,200));
         
-        final String s = movies.get(movieIndex).getDescription();
+        final String s = movie.getDescription();
         final String html = "<html><body style='width: %1spx'>%1s";
         final String formattedDescription = String.format(html, 200, s);
         movieDescriptionLabel.setText(formattedDescription);
         
         String movieTimes = "";
-        for (int j = 0; j < movies.get(movieIndex).genres.size(); j++) {
-        	movieTimes += movies.get(movieIndex).genres.get(j).name.toUpperCase();
-    		if(j != (movies.get(movieIndex).genres.size() - 1)) {
+        //times
+        for (int j = 0; j < times.size(); j++) {
+        	movieTimes += times.get(j).getMovieTime().getTimeString().toUpperCase();
+    		if(j != (times.size() - 1)) {
     			movieTimes += ", ";
     		}
 		}
         movieTimesLabel.setText(movieTimes);
         
         orderTicketsTimeSelectorBox.removeAllItems();
-//        System.out.println("MovieIndex:" + movieIndex);
-//        System.out.println("CountTimes:" + orderTicketsTimeSelectorBox.getItemCount());
         orderTicketsTimeSelectorBox.addItem("Select Time");
-        for (int i = 0; i < movies.get(movieIndex).times.toArray().length; i++) {
-			orderTicketsTimeSelectorBox.addItem(movies.get(movieIndex).times.toArray()[i].toString());
+        for (int i = 0; i < times.toArray().length; i++) {
+			orderTicketsTimeSelectorBox.addItem(times.get(i).getMovieTime().getTimeString());
 		}
         
     	String movieGenres = "";
-    	for (int j = 0; j < movies.get(movieIndex).times.size(); j++) {
-    		movieGenres += movies.get(movieIndex).times.get(j).toUpperCase();
-    		if(j != (movies.get(movieIndex).times.size() - 1)) {
+    	for (int j = 0; j < movie.genres.size(); j++) {
+    		movieGenres += movie.genres.get(j).getGenreName().toUpperCase();
+    		if(j != (movie.genres.size() - 1)) {
     			movieGenres += ", ";
     		}
 		}    	
@@ -1117,7 +1228,7 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
         
         orderPageMainPanel.validate();
 		orderPageMainPanel.repaint(); 
-		chosenMovieIndex = movieIndex;
+		chosenMovieIndex = movieTitle;
     }
     
     
@@ -1224,28 +1335,40 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
     
     public void loadDefaultData() {
     	
+    	movieMenu.addItem(DefaultData.MENU_ITEM_1);
+    	movieMenu.addItem(DefaultData.MENU_ITEM_2);
+    	movieMenu.addItem(DefaultData.MENU_ITEM_3);
+    	movieMenu.addItem(DefaultData.MENU_ITEM_4);
+    	movieMenu.addItem(DefaultData.MENU_ITEM_5);
+    	movieMenu.addItem(DefaultData.MENU_ITEM_6);
+    	movieMenu.addItem(DefaultData.MENU_ITEM_7);
+    	movieMenu.addItem(DefaultData.MENU_ITEM_8);
+    	movieMenu.addItem(DefaultData.MENU_ITEM_9);
+    	movieMenu.addItem(DefaultData.MENU_ITEM_10);
+    	
+    	
     	// load movies
-    	for (Movie movie : DefaultData.movies) {
+    	for (Movie movie : DefaultData.MOVIES) {
 //    		movies.put(movie.getTitle(), movie);
     		movies.add(movie);
     	}
     	
     	// load theaters
-    	for (Theater theater : DefaultData.theaters) {
+    	for (Theater theater : DefaultData.THEATERS) {
 //    		theaters.put(theater.getName(), theater);
     		theaters.add(theater);
     	}
     	
     	// load genres
-    	for (Genre genre : DefaultData.genres) {
+    	for (Genre genre : DefaultData.GENRES) {
 //    		genres.put(genre.getName(), genre);
     		genres.add(genre);
     	}
     	
-    	System.out.println(genres);
+//    	System.out.println(genres);
     	
     	// load genres
-    	for (String time : DefaultData.times) {
+    	for (String time : DefaultData.TIMES) {
 //    		times.put(time, time);
     		times.add(time);
     	}

@@ -1,98 +1,135 @@
 package edu.century.finalproject;
 
-import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 public class MovieMenuCollection {
-	private MovieMenuItem[] movie;
-	private int itemCounter;
-
+	
+	private HashMap<String, MovieMenuItem> menuItems;
+	
 	public MovieMenuCollection() {
-		final int INITIAL_CAPACITY = 12;
-		itemCounter = 0;
-		movie = new MovieMenuItem[INITIAL_CAPACITY];
+		menuItems = new HashMap();
+	}
+	
+	public HashMap<String, MovieMenuItem> getMenuItems() {
+		return menuItems;
 	}
 
-	public MovieMenuCollection(int initialCapacity) {
-		if (initialCapacity < 0)
-			throw new IllegalArgumentException("Inital Capacity is negative");
-		itemCounter = 0;
-		movie = new MovieMenuItem[initialCapacity];
+	public void setMenuItems(HashMap<String, MovieMenuItem> menuItems) {
+		this.menuItems = menuItems;
 	}
-
-	public MovieMenuItem[] getMovie() {
-		return movie;
+	
+	public MovieMenuCollection addItem(MovieMenuItem item) {
+		menuItems.put(item.getMovie().getTitle(), item);
+		return this;
 	}
-
-	public void setMovie(MovieMenuItem[] movie) {
-		this.movie = movie;
+	
+	public MovieMenuCollection removeItem(String key) {
+		menuItems.remove(key);
+		return this;
 	}
-
-	public int getItemCounter() {
-		return itemCounter;
+	
+	public static <K, V> Map<K, V> filterByValue(Map<K, V> map, Predicate<V> predicate) {
+        return map.entrySet()
+                .stream()
+                .filter(x -> predicate.test(x.getValue()))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
+	
+	
+	
+	public Map<String, MovieMenuItem> search(String searchString) {
+		
+		Map<String, MovieMenuItem> filteredCollection;
+			
+		filteredCollection = filterByValue(
+				menuItems, 
+				x -> (
+						x.getMovie().getTitle().toLowerCase().contains(searchString.toLowerCase()) 
+				)
+		);
+		
+		return filteredCollection;
 	}
-
-	public void setItemCounter(int itemCounter) {
-		this.itemCounter = itemCounter;
+	
+	public Map<String, MovieMenuItem> search(String searchString, Genre searchGenre) {
+		
+		Map<String, MovieMenuItem> filteredCollection;
+			
+		filteredCollection = filterByValue(
+				menuItems, 
+				x -> (
+						(
+								x.getMovie().getTitle().toLowerCase().contains(searchString.toLowerCase()) 
+						)
+						&& 
+						x.getMovie().genres.contains(searchGenre)
+				)
+		);
+		
+		return filteredCollection;
 	}
-
-	public void ensureCapacity(int newCapacity) {
-		MovieMenuItem[] newArrayMovie;
-		if (movie.length < newCapacity) {
-			newArrayMovie = new MovieMenuItem[newCapacity];
-			System.arraycopy(movie, 0, newArrayMovie, 0, itemCounter);
-			movie = newArrayMovie;
+	
+	public Map<String, MovieMenuItem> search(String searchString, MovieTime searchTime) {
+		
+		Map<String, MovieMenuItem> filteredCollection;
+		String searchDate = "2019-12-11";
+		
+//		System.out.println("test");
+//		System.out.println("Last Christmas");
+//		System.out.println(menuItems.get("Last Christmas").getSchedule().get(searchDate).getScheduleForDay().get(0));
+//		System.out.println(menuItems.get("Last Christmas").getSchedule().get(searchDate).getScheduleForDay().get(0).getMovieTime().equals(searchTime));
+//		System.out.println(menuItems.get("Last Christmas").getSchedule().get(searchDate).getScheduleForDay().get(1));
+//		System.out.println(menuItems.get("Last Christmas").getSchedule().get(searchDate).getScheduleForDay().get(1).getMovieTime().equals(searchTime));
+			
+		filteredCollection = filterByValue(
+				menuItems, 
+				x -> (
+						(
+								x.getMovie().getTitle().toLowerCase().contains(searchString.toLowerCase()) 
+						)
+						&& 
+						x.getSchedule().get(searchDate).getScheduleForDayTimesOnly().contains(searchTime)
+				)
+		);
+		
+		return filteredCollection;
+	}
+	
+	public Map<String, MovieMenuItem> search(String searchString, Genre searchGenre, MovieTime searchTime) {
+		
+		Map<String, MovieMenuItem> filteredCollection;
+		String searchDate = "2019-12-11";
+		
+		if(searchString.isEmpty()) {
+			
+			filteredCollection = filterByValue(
+					menuItems, 
+					x -> (
+							x.getMovie().genres.contains(searchGenre)
+					)
+			);
+			
+		} else {
+			
+			filteredCollection = filterByValue(
+					menuItems, 
+					x -> (
+							(
+									x.getMovie().getTitle().toLowerCase().contains(searchString.toLowerCase()) 
+									|| x.getMovie().getDescription().toLowerCase().contains(searchString.toLowerCase())
+							)
+							&& 
+								x.getMovie().genres.contains(searchGenre)
+							&& 
+								x.getSchedule().get(searchDate).getTimes().contains(searchTime)
+					)
+			);
 		}
-
+		
+		return filteredCollection;
 	}
-
-	public void addMovie(MovieMenuItem element) {
-		if (itemCounter == movie.length)
-			ensureCapacity(itemCounter * 2);
-		movie[itemCounter] = element;
-		itemCounter++;
-	}
-
-	public void addMany(MovieMenuItem... element) {
-		if (itemCounter + element.length > movie.length)
-			ensureCapacity((itemCounter + element.length) * 2);
-		System.arraycopy(element, 0, movie, 0, element.length);
-		itemCounter += element.length;
-	}
-
-	public int getCapacity() {
-		return movie.length;
-	}
-
-	public void TrimArray() {
-		MovieMenuItem[] TrimMovieList;
-		if (movie.length != itemCounter) {
-			TrimMovieList = new MovieMenuItem[itemCounter];
-			System.arraycopy(movie, 0, TrimMovieList, 0, itemCounter);
-			movie = TrimMovieList;
-		}
-	}
-
-	public void remove(String title) {
-		for (int i = 0; i < movie.length; i++) {
-			if (movie[i].getMovie().getTitle().equalsIgnoreCase(title))
-				movie[i] = null;
-		}
-	}
-
-	// working on search method by title
-	public MovieMenuItem searchMovie(String string) {
-		for (int i = 0; i < movie.length; i++) {
-			if (movie[i].getMovie().getTitle().equalsIgnoreCase(string))
-				return movie[i];
-			else if (movie[i].getMovie().getGenres().equals(string))
-				return movie[i];
-		}
-		return null;
-	}
-
-	@Override
-	public String toString() {
-		return "MovieMenuCollection [movie=" + Arrays.toString(movie) + ", itemCounter=" + itemCounter + "]";
-	}
-
+	
 }

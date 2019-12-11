@@ -16,17 +16,12 @@ public class Movie implements Comparable<Movie> {
 	
 	public Movie(String title, int duration, String description) {
 		super();
-		this.title = title;
+		this.title       = title;
 		this.description = description;
-		this.duration = duration;
+		this.duration    = duration;
 	}
 	
-	public void sort() {
-		Collections.sort(times);
-	}
-	public void sortGenre() {
-		Collections.sort((List<Genre>) genres);
-	}
+	
 	public void sortDuration() {
 		
 	}
@@ -39,24 +34,27 @@ public class Movie implements Comparable<Movie> {
 		return title;
 	}
 
-	public void setTitle(String title) {
+	public Movie setTitle(String title) {
 		this.title = title;
+		return this;
 	}
 
 	public String getDescription() {
 		return description;
 	}
 
-	public void setDescription(String description) {
+	public Movie setDescription(String description) {
 		this.description = description;
+		return this;
 	}
 
 	public int getDuration() {
 		return duration;
 	}
 
-	public void setDuration(int duration) {
+	public Movie setDuration(int duration) {
 		this.duration = duration;
+		return this;
 	}
 	
 	public String getImage() {
@@ -92,6 +90,13 @@ public class Movie implements Comparable<Movie> {
 	public String toString() {
 		return "Movie [title=" + title + ", description=" + description + ", duration=" + duration + "]";
 	}
+	
+	public void sort() {
+		Collections.sort(times);
+	}
+//	public void sortGenre() {
+//		Collections.sort((List<Genre>) genres);
+//	}
 
 	@Override
 	public int compareTo(Movie o) {

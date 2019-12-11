@@ -42,6 +42,13 @@ public class Reservation {
 	public void setDate(Date date) {
 		this.date = date;
 	}
+	
+	public Reservation() {
+		super();
+		count++;
+		this.reservationNumber = 32000+((count-1)*10) ;
+		this.date = new Date();
+	}
 
 	public Reservation(Ticket ticketInfo) {
 		super();
@@ -55,7 +62,7 @@ public class Reservation {
 	
 	public int openSeat(Ticket ticketInfo) {
 		
-			int start = ticketInfo.getTheater().getNumberSeats();
+			int start = ticketInfo.getTheater().getCapacity();
 			int take = ticketInfo.getPay().getNumTickets();
 			int newSeats= start - take;
 			
@@ -66,7 +73,7 @@ public class Reservation {
 	}
 	
 	public int refundSeats(Ticket ticket) {
-		int start = ticketInfo.getTheater().getNumberSeats();
+		int start = ticketInfo.getTheater().getCapacity();
 		int take = ticketInfo.getPay().getNumTickets();
 		int newSeats= start + take;
 		

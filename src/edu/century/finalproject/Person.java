@@ -6,7 +6,12 @@ public class Person {
 	private String lastName;
 	private String email;
 	
-	
+	public Person() {
+		super();
+		this.firstName = "";
+		this.lastName  = "";
+		this.email     = "";
+	}
 	
 	public Person(String firstName, String lastName, String email) {
 		super();
