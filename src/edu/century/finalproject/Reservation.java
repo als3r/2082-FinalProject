@@ -84,8 +84,9 @@ public class Reservation {
 	@Override
 	public String toString() {
 		String x= " ";
-		return String.format("%5sReservation"+"%n-------------------------------"+ "%n%s"+ ticketInfo.getPerson().toString()+ "%n%s"+ ticketInfo.toString()+ "%n%s"+ "Reservation Date: "+
-		reserveDate, x,x,x,x);
+		return String.format("Reservation #" + reservationNumber + "%n-------------------------------" +
+		"%n%s"+ ticketInfo.getPerson().toString() + "%n%s"+ ticketInfo.toString() + "%n" + 
+		"%nReservation Date: " + reserveDate, x,x);
 	}
 
 	

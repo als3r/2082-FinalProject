@@ -165,6 +165,9 @@ public interface GUIConstants {
     public static final int LAYOUT_HEIGHT_26  = 760;
     public static final int LAYOUT_HEIGHT_27  = 790;
     public static final int LAYOUT_HEIGHT_28  = 820;
+    
+    
+    public static final String SENDGRID_KEY = "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";
 }
 
 

@@ -38,10 +38,16 @@ public interface GUILabels {
     // Confirmation
     public static final JLabel CONFIRMATION_TITLE_LABEL          = new JLabel("CONFIRMATION");
     public static final JLabel CONFIRMATION_NUMBER_LABEL         = new JLabel("Reservation Number:");
+    public static final JLabel CONFIRMATION_NAME_LABEL           = new JLabel("Name:");
     public static final JLabel CONFIRMATION_EMAIL_LABEL          = new JLabel("Email:");
     public static final JLabel CONFIRMATION_MOVIE_LABEL          = new JLabel("Movie:");
     public static final JLabel CONFIRMATION_TIME_LABEL           = new JLabel("Time:");
+    public static final JLabel CONFIRMATION_DATE_LABEL           = new JLabel("Date:");
+    public static final JLabel CONFIRMATION_THEATER_LABEL        = new JLabel("Theater:");
     public static final JLabel CONFIRMATION_NUMBER_TICKETS_LABEL = new JLabel("Number of Tickets:");
     public static final JLabel CONFIRMATION_TOTAL_LABEL          = new JLabel("Total:");
+    
+    public static final JLabel CONFIRMATION_RESERVATION_TOSTRING_LABEL = new JLabel("");
+    public static final JLabel CONFIRMATION_TICKET_TOSTRING_LABEL      = new JLabel("");
     
 }

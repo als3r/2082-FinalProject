@@ -52,6 +52,9 @@ import java.util.Map;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import com.sendgrid.*;
+import java.io.IOException;
+
 
 /**
  * Definition for a GUI class of Ciinema Theater POS program
@@ -77,6 +80,7 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
 	 * Admin privileges
 	 */
 	private boolean isAdmin = false;
+	private boolean isEmailEnabled = true;
 	
     /**
      * JTextField for Movie Search
@@ -114,9 +118,12 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
     
     // Display Reservation Details on Confirmation Page
     private JLabel confirmationNumberLabel        = new JLabel();
+    private JLabel confirmationNameLabel          = new JLabel();
     private JLabel confirmationEmailLabel         = new JLabel();
     private JLabel confirmationMovieLabel         = new JLabel();
+    private JLabel confirmationDateLabel          = new JLabel();
     private JLabel confirmationTimeLabel          = new JLabel();
+    private JLabel confirmationTheaterLabel       = new JLabel();
     private JLabel confirmationNumberTicketsLabel = new JLabel();
     private JLabel confirmationTotalLabel         = new JLabel();
     
@@ -640,44 +647,74 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
         mainLayout.putConstraint(SpringLayout.WEST,  confirmationNumberLabel, TicketPOSGUI.LAYOUT_PADDING_10, SpringLayout.WEST, confirmationPageMainPanel);
         mainLayout.putConstraint(SpringLayout.NORTH, confirmationNumberLabel, TicketPOSGUI.LAYOUT_HEIGHT_5, SpringLayout.NORTH, confirmationPageMainPanel);
         
+        mainLayout.putConstraint(SpringLayout.WEST,  TicketPOSGUI.CONFIRMATION_NAME_LABEL, TicketPOSGUI.LAYOUT_PADDING_7, SpringLayout.WEST, confirmationPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.CONFIRMATION_NAME_LABEL, TicketPOSGUI.LAYOUT_HEIGHT_6, SpringLayout.NORTH, confirmationPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.WEST,  confirmationNameLabel, TicketPOSGUI.LAYOUT_PADDING_10, SpringLayout.WEST, confirmationPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, confirmationNameLabel, TicketPOSGUI.LAYOUT_HEIGHT_6, SpringLayout.NORTH, confirmationPageMainPanel);
+        
         mainLayout.putConstraint(SpringLayout.WEST,  TicketPOSGUI.CONFIRMATION_EMAIL_LABEL, TicketPOSGUI.LAYOUT_PADDING_7, SpringLayout.WEST, confirmationPageMainPanel);
-        mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.CONFIRMATION_EMAIL_LABEL, TicketPOSGUI.LAYOUT_HEIGHT_6, SpringLayout.NORTH, confirmationPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.CONFIRMATION_EMAIL_LABEL, TicketPOSGUI.LAYOUT_HEIGHT_7, SpringLayout.NORTH, confirmationPageMainPanel);
         mainLayout.putConstraint(SpringLayout.WEST,  confirmationEmailLabel, TicketPOSGUI.LAYOUT_PADDING_10, SpringLayout.WEST, confirmationPageMainPanel);
-        mainLayout.putConstraint(SpringLayout.NORTH, confirmationEmailLabel, TicketPOSGUI.LAYOUT_HEIGHT_6, SpringLayout.NORTH, confirmationPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, confirmationEmailLabel, TicketPOSGUI.LAYOUT_HEIGHT_7, SpringLayout.NORTH, confirmationPageMainPanel);
         
         mainLayout.putConstraint(SpringLayout.WEST,  TicketPOSGUI.CONFIRMATION_MOVIE_LABEL, TicketPOSGUI.LAYOUT_PADDING_7, SpringLayout.WEST, confirmationPageMainPanel);
-        mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.CONFIRMATION_MOVIE_LABEL, TicketPOSGUI.LAYOUT_HEIGHT_7, SpringLayout.NORTH, confirmationPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.CONFIRMATION_MOVIE_LABEL, TicketPOSGUI.LAYOUT_HEIGHT_8, SpringLayout.NORTH, confirmationPageMainPanel);
         mainLayout.putConstraint(SpringLayout.WEST,  confirmationMovieLabel, TicketPOSGUI.LAYOUT_PADDING_10, SpringLayout.WEST, confirmationPageMainPanel);
-        mainLayout.putConstraint(SpringLayout.NORTH, confirmationMovieLabel, TicketPOSGUI.LAYOUT_HEIGHT_7, SpringLayout.NORTH, confirmationPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, confirmationMovieLabel, TicketPOSGUI.LAYOUT_HEIGHT_8, SpringLayout.NORTH, confirmationPageMainPanel);
+        
+        mainLayout.putConstraint(SpringLayout.WEST,  TicketPOSGUI.CONFIRMATION_DATE_LABEL, TicketPOSGUI.LAYOUT_PADDING_7, SpringLayout.WEST, confirmationPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.CONFIRMATION_DATE_LABEL, TicketPOSGUI.LAYOUT_HEIGHT_9, SpringLayout.NORTH, confirmationPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.WEST,  confirmationDateLabel, TicketPOSGUI.LAYOUT_PADDING_10, SpringLayout.WEST, confirmationPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, confirmationDateLabel, TicketPOSGUI.LAYOUT_HEIGHT_9, SpringLayout.NORTH, confirmationPageMainPanel);
         
         mainLayout.putConstraint(SpringLayout.WEST,  TicketPOSGUI.CONFIRMATION_TIME_LABEL, TicketPOSGUI.LAYOUT_PADDING_7, SpringLayout.WEST, confirmationPageMainPanel);
-        mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.CONFIRMATION_TIME_LABEL, TicketPOSGUI.LAYOUT_HEIGHT_8, SpringLayout.NORTH, confirmationPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.CONFIRMATION_TIME_LABEL, TicketPOSGUI.LAYOUT_HEIGHT_10, SpringLayout.NORTH, confirmationPageMainPanel);
         mainLayout.putConstraint(SpringLayout.WEST,  confirmationTimeLabel, TicketPOSGUI.LAYOUT_PADDING_10, SpringLayout.WEST, confirmationPageMainPanel);
-        mainLayout.putConstraint(SpringLayout.NORTH, confirmationTimeLabel, TicketPOSGUI.LAYOUT_HEIGHT_8, SpringLayout.NORTH, confirmationPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, confirmationTimeLabel, TicketPOSGUI.LAYOUT_HEIGHT_10, SpringLayout.NORTH, confirmationPageMainPanel);
+        
+        mainLayout.putConstraint(SpringLayout.WEST,  TicketPOSGUI.CONFIRMATION_THEATER_LABEL, TicketPOSGUI.LAYOUT_PADDING_7, SpringLayout.WEST, confirmationPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.CONFIRMATION_THEATER_LABEL, TicketPOSGUI.LAYOUT_HEIGHT_11, SpringLayout.NORTH, confirmationPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.WEST,  confirmationTheaterLabel, TicketPOSGUI.LAYOUT_PADDING_10, SpringLayout.WEST, confirmationPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, confirmationTheaterLabel, TicketPOSGUI.LAYOUT_HEIGHT_11, SpringLayout.NORTH, confirmationPageMainPanel);
         
         mainLayout.putConstraint(SpringLayout.WEST,  TicketPOSGUI.CONFIRMATION_NUMBER_TICKETS_LABEL, TicketPOSGUI.LAYOUT_PADDING_7, SpringLayout.WEST, confirmationPageMainPanel);
-        mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.CONFIRMATION_NUMBER_TICKETS_LABEL, TicketPOSGUI.LAYOUT_HEIGHT_9, SpringLayout.NORTH, confirmationPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.CONFIRMATION_NUMBER_TICKETS_LABEL, TicketPOSGUI.LAYOUT_HEIGHT_12, SpringLayout.NORTH, confirmationPageMainPanel);
         mainLayout.putConstraint(SpringLayout.WEST,  confirmationNumberTicketsLabel, TicketPOSGUI.LAYOUT_PADDING_10, SpringLayout.WEST, confirmationPageMainPanel);
-        mainLayout.putConstraint(SpringLayout.NORTH, confirmationNumberTicketsLabel, TicketPOSGUI.LAYOUT_HEIGHT_9, SpringLayout.NORTH, confirmationPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, confirmationNumberTicketsLabel, TicketPOSGUI.LAYOUT_HEIGHT_12, SpringLayout.NORTH, confirmationPageMainPanel);
         
         mainLayout.putConstraint(SpringLayout.WEST,  TicketPOSGUI.CONFIRMATION_TOTAL_LABEL, TicketPOSGUI.LAYOUT_PADDING_7, SpringLayout.WEST, confirmationPageMainPanel);
-        mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.CONFIRMATION_TOTAL_LABEL, TicketPOSGUI.LAYOUT_HEIGHT_10, SpringLayout.NORTH, confirmationPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.CONFIRMATION_TOTAL_LABEL, TicketPOSGUI.LAYOUT_HEIGHT_13, SpringLayout.NORTH, confirmationPageMainPanel);
         mainLayout.putConstraint(SpringLayout.WEST,  confirmationTotalLabel, TicketPOSGUI.LAYOUT_PADDING_10, SpringLayout.WEST, confirmationPageMainPanel);
-        mainLayout.putConstraint(SpringLayout.NORTH, confirmationTotalLabel, TicketPOSGUI.LAYOUT_HEIGHT_10, SpringLayout.NORTH, confirmationPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, confirmationTotalLabel, TicketPOSGUI.LAYOUT_HEIGHT_13, SpringLayout.NORTH, confirmationPageMainPanel);
+        
+        mainLayout.putConstraint(SpringLayout.WEST,  TicketPOSGUI.CONFIRMATION_TICKET_TOSTRING_LABEL,      TicketPOSGUI.LAYOUT_PADDING_12, SpringLayout.WEST,  confirmationPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.CONFIRMATION_TICKET_TOSTRING_LABEL,      TicketPOSGUI.LAYOUT_HEIGHT_4,  SpringLayout.NORTH, confirmationPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.WEST,  TicketPOSGUI.CONFIRMATION_RESERVATION_TOSTRING_LABEL, TicketPOSGUI.LAYOUT_PADDING_12, SpringLayout.WEST,  confirmationPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.CONFIRMATION_RESERVATION_TOSTRING_LABEL, TicketPOSGUI.LAYOUT_HEIGHT_12,   SpringLayout.NORTH, confirmationPageMainPanel);
+        
         
         // Add elements to Login Panel
         confirmationPageMainPanel.add(TicketPOSGUI.CONFIRMATION_TITLE_LABEL);
         confirmationPageMainPanel.add(TicketPOSGUI.CONFIRMATION_NUMBER_LABEL);
+        confirmationPageMainPanel.add(TicketPOSGUI.CONFIRMATION_NAME_LABEL);
         confirmationPageMainPanel.add(TicketPOSGUI.CONFIRMATION_EMAIL_LABEL);
         confirmationPageMainPanel.add(TicketPOSGUI.CONFIRMATION_MOVIE_LABEL);
+        confirmationPageMainPanel.add(TicketPOSGUI.CONFIRMATION_DATE_LABEL);
         confirmationPageMainPanel.add(TicketPOSGUI.CONFIRMATION_TIME_LABEL);
+        confirmationPageMainPanel.add(TicketPOSGUI.CONFIRMATION_THEATER_LABEL);
         confirmationPageMainPanel.add(TicketPOSGUI.CONFIRMATION_NUMBER_TICKETS_LABEL);
         confirmationPageMainPanel.add(TicketPOSGUI.CONFIRMATION_TOTAL_LABEL);
         
+        confirmationPageMainPanel.add(TicketPOSGUI.CONFIRMATION_RESERVATION_TOSTRING_LABEL);
+        confirmationPageMainPanel.add(TicketPOSGUI.CONFIRMATION_TICKET_TOSTRING_LABEL);
+        
         confirmationPageMainPanel.add(confirmationNumberLabel);
+        confirmationPageMainPanel.add(confirmationNameLabel);
         confirmationPageMainPanel.add(confirmationEmailLabel);
         confirmationPageMainPanel.add(confirmationMovieLabel);
+        confirmationPageMainPanel.add(confirmationDateLabel);
         confirmationPageMainPanel.add(confirmationTimeLabel);
+        confirmationPageMainPanel.add(confirmationTheaterLabel);
         confirmationPageMainPanel.add(confirmationNumberTicketsLabel);
         confirmationPageMainPanel.add(confirmationTotalLabel);
         
@@ -801,46 +838,100 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
 			
 			// From Order Page, Process Payment, Order Tickets
         	
-        	String firstName    = customerFirstNameTextField.getText();
-        	String lastName     = customerLastNameTextField.getText();
-        	String email        = customerEmailTextField.getText();
-        	Person customer     = new Person(firstName, lastName, email);
-        	
         	int numberTickets   = Integer.valueOf(orderTicketsNumberTicketsSelectorBox.getSelectedItem().toString());
         	String selectedTime = String.valueOf(orderTicketsTimeSelectorBox.getSelectedItem());
-        	String selectedDate = String.valueOf(orderTicketsDateSelectorBox.getSelectedItem()).substring(0, 9);
+        	String selectedDate = String.valueOf(orderTicketsDateSelectorBox.getSelectedItem()).substring(0, 10);
         	
         	String cardNumber   = cardNumberTextField.getText();
         	String cardExpMonth = cardExpMonthTextField.getText();
         	String cardExpYear  = cardExpYearTextField.getText();
         	String cardZipCode  = cardZipTextField.getText();
         	
+        	String firstName    = customerFirstNameTextField.getText();
+        	String lastName     = customerLastNameTextField.getText();
+        	String email        = customerEmailTextField.getText();
+        	Person customer     = new Person(firstName, lastName, email);
+        	
         	Payment payment     = new Payment(customer, numberTickets, cardNumber);
         		 
         	Ticket ticket       = new Ticket();
-        	
         	ticket.setPerson(customer);
         	ticket.setMovie(movieMenu.getMenuItems().get(chosenMovieIndex).getMovie());
-//        	ticket.setTime(selectedTime);
-//        	ticket.setTotal(payment.getTotal());
+        	ticket.setTheater(
+        			movieMenu.getMenuItems()
+        			.get(chosenMovieIndex)
+        			.getSchedule()
+        			.get(selectedDate)
+        			.getTimes()
+        			.get(orderTicketsTimeSelectorBox.getSelectedIndex()-1)
+        			.getTheater()
+			);
+        	ticket.setPay(payment);
+        	ticket.setMovieTime(selectedTime);
+        	ticket.setMovieDate(selectedDate);
 
         	reservation.setTicketInfo(ticket);
+        	reservation.setReserveDate(selectedDate);
+        	reservation.setTicketInfo(ticket);
      
-//        	alert(reservation.toString(), "Reservation");
-        	
         	// display confirmation details on confirmation page
         	confirmationNumberLabel.setText(String.valueOf(reservation.getReservationNumber()));
+        	confirmationNameLabel.setText(reservation.getTicketInfo().getPerson().getFirstName() + " " + reservation.getTicketInfo().getPerson().getLastName());
             confirmationEmailLabel.setText(reservation.getTicketInfo().getPerson().getEmail());
             confirmationMovieLabel.setText(reservation.getTicketInfo().getMovie().getTitle());
-//            confirmationTimeLabel.setText(String.valueOf(reservation.getTicketInfo().getTime()));
-            confirmationNumberTicketsLabel.setText(String.valueOf(payment.getNumTickets()));
-            confirmationTotalLabel.setText("$" + String.valueOf(payment.getTotal()) + "0");
+            confirmationDateLabel.setText(String.valueOf(reservation.getTicketInfo().getMovieDate()));
+            confirmationTimeLabel.setText(String.valueOf(reservation.getTicketInfo().getMovieTime()));
+            confirmationTheaterLabel.setText(String.valueOf(reservation.getTicketInfo().getTheater().getName()));
+            confirmationNumberTicketsLabel.setText(String.valueOf(reservation.getTicketInfo().getPay().getNumTickets()));
+            confirmationTotalLabel.setText("$" + String.valueOf(reservation.getTicketInfo().getPay().getTotal()) + "0");
         	
 			showPanel(confirmationPageMainPanel);
+			
+//			TicketPOSGUI.CONFIRMATION_TICKET_TOSTRING_LABEL.setText(ticket.toString());
+//			TicketPOSGUI.CONFIRMATION_RESERVATION_TOSTRING_LABEL.setText(reservation.toString());
+			
+			System.out.println(ticket.toString());
+			System.out.println();
+			System.out.println(reservation.toString());
+			
+			System.out.println(isEmailEnabled);
+			
+			// Send Out Confirmation Email
+			if(isEmailEnabled) {
+				
+				String contentEmail = "Confirmation Email" + "\n\n";
+				contentEmail += reservation.toString();
+				
+				
+				Email   from    = new Email("sergeyev.alex@gmail.com");
+			    Email   to      = new Email(customer.getEmail());
+			    String  subject = "TicketPOS - Confirmation Email";
+			    Content content = new Content("text/plain", contentEmail);
+
+			    Mail   mail    = new Mail(from, subject, to, content);
+			    
+			    SendGrid sg = new SendGrid(SENDGRID_KEY);
+			    Request request = new Request();
+			    try {
+			      
+			    	request.setMethod(Method.POST);
+			      request.setEndpoint("mail/send");
+			      request.setBody(mail.build());
+			      Response response = sg.api(request);
+			      System.out.println(response.getStatusCode());
+			      System.out.println(response.getBody());
+			      System.out.println(response.getHeaders());
+			      
+			    } catch (IOException ex) {
+			    	ex.printStackTrace();
+			    }
+			}
 			
 			// Add current reservation to reservations storage and reset current reservation
 			reservations.put(String.valueOf(reservation.getReservationNumber()), reservation);
 			reservation = new Reservation();
+			
+			// END PURCHASE TICKETS
 			
         } else if(actionCommand.equals(TicketPOSGUI.BUTTON_CAPTION_ORDER_TEST_VALUES)) {
 			
@@ -1466,6 +1557,11 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
     	movieMenu.addItem(DefaultData.MENU_ITEM_8);
     	movieMenu.addItem(DefaultData.MENU_ITEM_9);
     	movieMenu.addItem(DefaultData.MENU_ITEM_10);
+    	movieMenu.addItem(DefaultData.MENU_ITEM_11);
+    	movieMenu.addItem(DefaultData.MENU_ITEM_12);
+    	movieMenu.addItem(DefaultData.MENU_ITEM_13);
+    	movieMenu.addItem(DefaultData.MENU_ITEM_14);
+    	movieMenu.addItem(DefaultData.MENU_ITEM_15);
     	
     	
     	// load movies
