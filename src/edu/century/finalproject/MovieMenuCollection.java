@@ -4,6 +4,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.LinkedList; 
+import java.util.List; 
+import java.util.Collections; 
+import java.util.Comparator; 
+import java.util.LinkedHashMap; 
 
 public class MovieMenuCollection {
 	
@@ -32,10 +37,13 @@ public class MovieMenuCollection {
 	}
 	
 	public static <K, V> Map<K, V> filterByValue(Map<K, V> map, Predicate<V> predicate) {
-        return map.entrySet()
+		
+		Map temp = map.entrySet()
                 .stream()
                 .filter(x -> predicate.test(x.getValue()))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+		
+        return temp;
     }
 	
 	
@@ -126,5 +134,30 @@ public class MovieMenuCollection {
 		
 		return filteredCollection;
 	}
+	
+	// function to sort hashmap by values 
+    public Map<String, MovieMenuItem> sortByTitle() 
+    { 
+        // Create a list from elements of HashMap 
+        List<Map.Entry<String, MovieMenuItem> > list = 
+               new LinkedList<Map.Entry<String, MovieMenuItem> >(menuItems.entrySet()); 
+  
+        // Sort the list 
+        Collections.sort(list, new Comparator<Map.Entry<String, MovieMenuItem> >() { 
+            public int compare(Map.Entry<String, MovieMenuItem> o1,  
+                               Map.Entry<String, MovieMenuItem> o2) 
+            { 
+                return (o1.getValue()).compareTo(o2.getValue()); 
+            } 
+        }); 
+          
+        // put data from sorted list to hashmap  
+        Map<String, MovieMenuItem> tempMap = new LinkedHashMap<String, MovieMenuItem>(); 
+        for (Map.Entry<String, MovieMenuItem> aa : list) { 
+            tempMap.put(aa.getKey(), aa.getValue()); 
+        } 
+        
+        return tempMap; 
+    } 
 	
 }

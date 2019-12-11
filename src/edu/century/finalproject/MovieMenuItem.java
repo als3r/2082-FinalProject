@@ -2,7 +2,7 @@ package edu.century.finalproject;
 
 import java.util.HashMap;
 
-public class MovieMenuItem {
+public class MovieMenuItem implements Comparable<MovieMenuItem> {
 	
 	private Movie   movie;
 	private HashMap<String, MovieSchedule> schedule;
@@ -45,6 +45,11 @@ public class MovieMenuItem {
 
 	public void setMovie(Movie movie) {
 		this.movie = movie;
+	}
+	
+	@Override
+	public int compareTo(MovieMenuItem o) {
+		return this.getMovie().getTitle().compareTo(o.getMovie().getTitle());
 	}
 
 	@Override

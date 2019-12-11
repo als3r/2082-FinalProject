@@ -39,10 +39,14 @@ import java.awt.event.ActionEvent;
 
 import java.lang.IllegalArgumentException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Hashtable;
 import java.util.List;
 
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Predicate;
@@ -414,15 +418,16 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
         mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.TIMES_LABEL,       TicketPOSGUI.LAYOUT_HEIGHT_1+3,SpringLayout.NORTH, searchBarPanel);
         mainLayout.putConstraint(SpringLayout.WEST,  timeSelectorBox,                TicketPOSGUI.LAYOUT_PADDING_1, SpringLayout.EAST,  TicketPOSGUI.TIMES_LABEL);
         mainLayout.putConstraint(SpringLayout.NORTH, timeSelectorBox,                TicketPOSGUI.LAYOUT_HEIGHT_1,  SpringLayout.NORTH, searchBarPanel);
-        mainLayout.putConstraint(SpringLayout.WEST,  actionSearchButton,             TicketPOSGUI.LAYOUT_PADDING_1, SpringLayout.EAST,  timeSelectorBox);
-        mainLayout.putConstraint(SpringLayout.NORTH, actionSearchButton,             TicketPOSGUI.LAYOUT_HEIGHT_1,  SpringLayout.NORTH, searchBarPanel);
         
-        mainLayout.putConstraint(SpringLayout.WEST,  TicketPOSGUI.SORT_LABEL,        TicketPOSGUI.LAYOUT_PADDING_2, SpringLayout.EAST,  actionSearchButton);
+        mainLayout.putConstraint(SpringLayout.WEST,  TicketPOSGUI.SORT_LABEL,        TicketPOSGUI.LAYOUT_PADDING_2, SpringLayout.EAST,  timeSelectorBox);
         mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.SORT_LABEL,        TicketPOSGUI.LAYOUT_HEIGHT_1+3,  SpringLayout.NORTH, searchBarPanel);
         mainLayout.putConstraint(SpringLayout.WEST,  sortMoviesSelectorBox,          TicketPOSGUI.LAYOUT_PADDING_1, SpringLayout.EAST,  TicketPOSGUI.SORT_LABEL);
         mainLayout.putConstraint(SpringLayout.NORTH, sortMoviesSelectorBox,          TicketPOSGUI.LAYOUT_HEIGHT_1,  SpringLayout.NORTH, searchBarPanel);
-        mainLayout.putConstraint(SpringLayout.WEST,  actionSortButton,               TicketPOSGUI.LAYOUT_PADDING_1, SpringLayout.EAST,  sortMoviesSelectorBox);
-        mainLayout.putConstraint(SpringLayout.NORTH, actionSortButton,               TicketPOSGUI.LAYOUT_HEIGHT_1,  SpringLayout.NORTH, searchBarPanel);
+        
+        mainLayout.putConstraint(SpringLayout.WEST,  actionSearchButton,             TicketPOSGUI.LAYOUT_PADDING_2, SpringLayout.EAST,  sortMoviesSelectorBox);
+        mainLayout.putConstraint(SpringLayout.NORTH, actionSearchButton,             TicketPOSGUI.LAYOUT_HEIGHT_1,  SpringLayout.NORTH, searchBarPanel);
+//        mainLayout.putConstraint(SpringLayout.WEST,  actionSortButton,               TicketPOSGUI.LAYOUT_PADDING_1, SpringLayout.EAST,  sortMoviesSelectorBox);
+//        mainLayout.putConstraint(SpringLayout.NORTH, actionSortButton,               TicketPOSGUI.LAYOUT_HEIGHT_1,  SpringLayout.NORTH, searchBarPanel);
         
         // Set Customer Panel/Screen position inside Main Window Panel
         mainLayout.putConstraint(SpringLayout.WEST,  movieMenuPanel, 0, SpringLayout.WEST,  customerViewPanel);
@@ -443,7 +448,7 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
         searchBarPanel.add(actionSearchButton);
         searchBarPanel.add(TicketPOSGUI.SORT_LABEL);
         searchBarPanel.add(sortMoviesSelectorBox);
-        searchBarPanel.add(actionSortButton);
+//        searchBarPanel.add(actionSortButton);
         
         movieMenuPanel.add(movieMenuScrollPanel);
 
@@ -845,7 +850,11 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
 			} else {
 				alert("Wrong username or password!", "Error");
 			}
-		        	
+			
+        } else if(actionCommand.equals(TicketPOSGUI.BUTTON_CAPTION_SORT)) {
+			
+    		// From Search Form, Sort Movies using user input
+        	
 		} else if(actionCommand.equals(TicketPOSGUI.BUTTON_CAPTION_SEARCH)) {
 			
     		// From Search Form, Find Movies using user input
@@ -854,6 +863,7 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
 			String searchString = searchMovieTextField.getText();
 			String searchGenre  = String.valueOf(genreSelectorBox.getSelectedItem());
 			String searchTime   = String.valueOf(timeSelectorBox.getSelectedItem());
+			String sortBy       = String.valueOf(sortMoviesSelectorBox.getSelectedItem());
 			
 			searchString = searchString.equalsIgnoreCase("")      ? "" : searchString;
 			searchGenre  = searchGenre.equalsIgnoreCase("Select") ? "" : searchGenre;
@@ -878,8 +888,34 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
 				filteredCollection = movieMenu.search(searchString, genre, time);
 			}
 			
-						
-			updateMovieMenu(filteredCollection);	
+			if(sortBy.equalsIgnoreCase("Title")) {        		
+        		
+				// Create a list from elements of HashMap 
+		        List<Map.Entry<String, MovieMenuItem> > list = 
+		               new LinkedList<Map.Entry<String, MovieMenuItem> >(filteredCollection.entrySet()); 
+		  
+		        // Sort the list 
+		        Collections.sort(list, new Comparator<Map.Entry<String, MovieMenuItem> >() { 
+		            public int compare(Map.Entry<String, MovieMenuItem> o1,  
+		                               Map.Entry<String, MovieMenuItem> o2) 
+		            { 
+		                return (o1.getValue()).compareTo(o2.getValue()); 
+		            } 
+		        }); 
+		          
+		        // put data from sorted list to hashmap  
+		        Map<String, MovieMenuItem> tempMap = new LinkedHashMap<String, MovieMenuItem>(); 
+		        for (Map.Entry<String, MovieMenuItem> aa : list) { 
+		            tempMap.put(aa.getKey(), aa.getValue()); 
+		        } 
+		        
+		        updateMovieMenu(tempMap);	
+				
+				
+        	} else {        		
+        		updateMovieMenu(filteredCollection);	
+        	}
+			
 			
 			if (filteredCollection.size() == 0) {
 				String message = "Oops. Couldn't find movies. Please try something else." + "\n";
