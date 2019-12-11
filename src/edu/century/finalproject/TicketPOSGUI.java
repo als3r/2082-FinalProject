@@ -163,11 +163,11 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
     /**
      * To Store reservation and search by Reservation number
      */
-//    private Hashtable<String, Reservation> reservations = new Hashtable<String, Reservation>();
-    private List<Reservation> reservations = new ArrayList<>();
+    private HashMap<String, Reservation> reservations = new HashMap<String, Reservation>();
+//    private List<Reservation> reservations = new ArrayList<>();
     
     /**
-     * JComboBox for period selector
+     * JComboBox for genre selector
      */
     private JComboBox<String> genreSelectorBox;
     
@@ -177,12 +177,17 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
     private JComboBox<String> timeSelectorBox;
     
     /**
-     * JComboBox for period selector
+     * JComboBox for time selector
+     */
+    private JComboBox<String> orderTicketsDateSelectorBox = new JComboBox(); 
+    
+    /**
+     * JComboBox for time selector
      */
     private JComboBox<String> orderTicketsTimeSelectorBox = new JComboBox(); 
     
     /**
-     * JComboBox for period selector
+     * JComboBox for number tickets selector
      */
     private JComboBox<String> orderTicketsNumberTicketsSelectorBox = new JComboBox(GUIConstants.NUMBER_TICKETS_ARRAY); 
     
@@ -300,7 +305,8 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
         timeSelectorBox = new JComboBox(arrayTimes);
 //        timeSelectorBox = new JComboBox();
         
-        
+        String[] arrayDate = {"2019-12-11 Wednesday","2019-12-12 Thursday","2019-12-13 Friday","2019-12-14 Saturday","2019-12-15 Sunday"};
+        orderTicketsDateSelectorBox = new JComboBox(arrayDate);
         
         // Create spring layout
         SpringLayout mainLayout = new SpringLayout();
@@ -495,7 +501,7 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
         mainLayout.putConstraint(SpringLayout.WEST,  actionBackButton, TicketPOSGUI.LAYOUT_PADDING_1, SpringLayout.WEST, orderPageMainPanel);
         mainLayout.putConstraint(SpringLayout.NORTH, actionBackButton, TicketPOSGUI.LAYOUT_HEIGHT_1, SpringLayout.NORTH, orderPageMainPanel);
         mainLayout.putConstraint(SpringLayout.WEST,  TicketPOSGUI.SELECT_TICKETS_LABEL, TicketPOSGUI.LAYOUT_PADDING_14, SpringLayout.WEST, orderPageMainPanel);
-        mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.SELECT_TICKETS_LABEL, TicketPOSGUI.LAYOUT_HEIGHT_3, SpringLayout.NORTH, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.SELECT_TICKETS_LABEL, TicketPOSGUI.LAYOUT_HEIGHT_2, SpringLayout.NORTH, orderPageMainPanel);
         TicketPOSGUI.SELECT_TICKETS_LABEL.setFont(GUIFonts.FONT_18);
         
         
@@ -503,6 +509,12 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
         mainLayout.putConstraint(SpringLayout.WEST,  TicketPOSGUI.PAYMENT_FORM_LABEL, TicketPOSGUI.LAYOUT_PADDING_14, SpringLayout.WEST, orderPageMainPanel);
         mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.PAYMENT_FORM_LABEL, TicketPOSGUI.LAYOUT_HEIGHT_7, SpringLayout.NORTH, orderPageMainPanel);
         TicketPOSGUI.PAYMENT_FORM_LABEL.setFont(GUIFonts.FONT_18);
+       
+        // Row - Select Date
+        mainLayout.putConstraint(SpringLayout.WEST,  TicketPOSGUI.SELECT_TICKETS_DATE_LABEL, TicketPOSGUI.LAYOUT_PADDING_14, SpringLayout.WEST, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.SELECT_TICKETS_DATE_LABEL, TicketPOSGUI.LAYOUT_HEIGHT_3, SpringLayout.NORTH, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.WEST,  orderTicketsDateSelectorBox,  LAYOUT_PADDING_16, SpringLayout.WEST, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, orderTicketsDateSelectorBox,  LAYOUT_HEIGHT_3, SpringLayout.NORTH, orderPageMainPanel);
         
         // Row - Select Time
         mainLayout.putConstraint(SpringLayout.WEST,  TicketPOSGUI.SELECT_TICKETS_TIME_LABEL, TicketPOSGUI.LAYOUT_PADDING_14, SpringLayout.WEST, orderPageMainPanel);
@@ -560,9 +572,11 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
         
         // Add elements to Login Panel
         orderPageMainPanel.add(TicketPOSGUI.SELECT_TICKETS_LABEL);
+        orderPageMainPanel.add(TicketPOSGUI.SELECT_TICKETS_DATE_LABEL);
         orderPageMainPanel.add(TicketPOSGUI.SELECT_TICKETS_TIME_LABEL);
         orderPageMainPanel.add(TicketPOSGUI.SELECT_TICKETS_NUMBER_LABEL);
         orderPageMainPanel.add(orderTicketsTimeSelectorBox);
+        orderPageMainPanel.add(orderTicketsDateSelectorBox);
         orderPageMainPanel.add(orderTicketsNumberTicketsSelectorBox);
         
         orderPageMainPanel.add(TicketPOSGUI.PAYMENT_FORM_LABEL);
@@ -794,6 +808,7 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
         	
         	int numberTickets   = Integer.valueOf(orderTicketsNumberTicketsSelectorBox.getSelectedItem().toString());
         	String selectedTime = String.valueOf(orderTicketsTimeSelectorBox.getSelectedItem());
+        	String selectedDate = String.valueOf(orderTicketsDateSelectorBox.getSelectedItem()).substring(0, 9);
         	
         	String cardNumber   = cardNumberTextField.getText();
         	String cardExpMonth = cardExpMonthTextField.getText();
@@ -810,7 +825,6 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
 //        	ticket.setTotal(payment.getTotal());
 
         	reservation.setTicketInfo(ticket);
-//        	reservation.setNumberTickets(numberTickets);
      
 //        	alert(reservation.toString(), "Reservation");
         	
@@ -819,13 +833,13 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
             confirmationEmailLabel.setText(reservation.getTicketInfo().getPerson().getEmail());
             confirmationMovieLabel.setText(reservation.getTicketInfo().getMovie().getTitle());
 //            confirmationTimeLabel.setText(String.valueOf(reservation.getTicketInfo().getTime()));
-//            confirmationNumberTicketsLabel.setText(String.valueOf(reservation.getNumberTickets()));
-            confirmationTotalLabel.setText("$" + String.valueOf(reservation.getTicketInfo().getTotal()) + "0");
+            confirmationNumberTicketsLabel.setText(String.valueOf(payment.getNumTickets()));
+            confirmationTotalLabel.setText("$" + String.valueOf(payment.getTotal()) + "0");
         	
 			showPanel(confirmationPageMainPanel);
 			
 			// Add current reservation to reservations storage and reset current reservation
-			reservations.add(reservation);
+			reservations.put(String.valueOf(reservation.getReservationNumber()), reservation);
 			reservation = new Reservation();
 			
         } else if(actionCommand.equals(TicketPOSGUI.BUTTON_CAPTION_ORDER_TEST_VALUES)) {

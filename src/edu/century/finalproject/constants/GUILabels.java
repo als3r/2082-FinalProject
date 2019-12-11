@@ -14,6 +14,7 @@ public interface GUILabels {
 	
 	// Select Tickets Form
 	public static final JLabel SELECT_TICKETS_LABEL        = new JLabel("SELECT TICKETS");
+	public static final JLabel SELECT_TICKETS_DATE_LABEL   = new JLabel("Date:");
 	public static final JLabel SELECT_TICKETS_TIME_LABEL   = new JLabel("Time:");
 	public static final JLabel SELECT_TICKETS_NUMBER_LABEL = new JLabel("Tickets:");
     

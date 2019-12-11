@@ -10,6 +10,21 @@ public class Reservation {
 	private Date date;
 	private String reserveDate;
 	public static int count;
+	
+	public Reservation() {
+		super();
+		count++;
+		this.reservationNumber = 32000+((count-1)*10) ;
+		this.date = new Date();
+	}
+
+	public Reservation(Ticket ticketInfo) {
+		super();
+		count++;
+		this.reservationNumber = 32000+((count-1)*10) ;
+		this.ticketInfo = ticketInfo;
+		this.date = new Date();
+	}
 
 	public String getReserveDate() {
 		return reserveDate;
@@ -42,23 +57,6 @@ public class Reservation {
 	public void setDate(Date date) {
 		this.date = date;
 	}
-	
-	public Reservation() {
-		super();
-		count++;
-		this.reservationNumber = 32000+((count-1)*10) ;
-		this.date = new Date();
-	}
-
-	public Reservation(Ticket ticketInfo) {
-		super();
-		count++;
-		this.reservationNumber = 32000+((count-1)*10) ;
-		this.ticketInfo = ticketInfo;
-		this.date = new Date();
-	}
-	
-	
 	
 	public int openSeat(Ticket ticketInfo) {
 		
