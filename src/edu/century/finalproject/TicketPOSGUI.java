@@ -276,6 +276,8 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
 	// Confirmation page
 	JPanel confirmationPageMainPanel;
 	
+	JButton actionAdminRefundReservationButton;
+	
 	public String defaultDate = "2019-12-11";
 	
     
@@ -410,6 +412,10 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
         // Search Reservation
         JButton actionAdminSearchReservationButton = new JButton(BUTTON_CAPTION_ADMIN_FIND_RESERVATION);
         actionAdminSearchReservationButton.addActionListener(this);
+        
+        // Refund Reservation
+        actionAdminRefundReservationButton = new JButton(BUTTON_CAPTION_ADMIN_REFUND_RESERVATION);
+        actionAdminRefundReservationButton.addActionListener(this);
         
         // Update Price
         JButton actionAdminUpdatePriceButton = new JButton(BUTTON_CAPTION_ADMIN_SET_PRICE);
@@ -866,6 +872,10 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
         mainLayout.putConstraint(SpringLayout.NORTH, adminSearchReservationTextField, TicketPOSGUI.LAYOUT_HEIGHT_1, SpringLayout.NORTH, adminMainPanel);
         mainLayout.putConstraint(SpringLayout.WEST,  actionAdminSearchReservationButton, TicketPOSGUI.LAYOUT_PADDING_8, SpringLayout.WEST, adminMainPanel);
         mainLayout.putConstraint(SpringLayout.NORTH, actionAdminSearchReservationButton, TicketPOSGUI.LAYOUT_HEIGHT_1, SpringLayout.NORTH, adminMainPanel);
+        mainLayout.putConstraint(SpringLayout.WEST,  actionAdminRefundReservationButton, TicketPOSGUI.LAYOUT_PADDING_11, SpringLayout.WEST, adminMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, actionAdminRefundReservationButton, TicketPOSGUI.LAYOUT_HEIGHT_1, SpringLayout.NORTH, adminMainPanel);
+        
+        actionAdminRefundReservationButton.setVisible(false);
         
         mainLayout.putConstraint(SpringLayout.WEST,  scrollPanelTextArea, TicketPOSGUI.LAYOUT_PADDING_1, SpringLayout.WEST, adminMainPanel);
         mainLayout.putConstraint(SpringLayout.EAST,  scrollPanelTextArea, -TicketPOSGUI.LAYOUT_PADDING_1, SpringLayout.EAST, adminMainPanel);
@@ -875,6 +885,7 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
         adminMainPanel.add(TicketPOSGUI.ADMIN_SEARCH_RESERVATION_LABEL);
         adminMainPanel.add(adminSearchReservationTextField);
         adminMainPanel.add(actionAdminSearchReservationButton);
+        adminMainPanel.add(actionAdminRefundReservationButton);
         adminMainPanel.add(scrollPanelTextArea);
         
 		mainWindowPanel.add(adminMainPanel);
@@ -1020,8 +1031,46 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
 					Reservation reservation       = reservations.get(reservationNumber);
 		        	String      reservationInfo   = reservation.toString();
 		        	adminconsoleTextArea.setText(reservationInfo);
+		        	actionAdminRefundReservationButton.setVisible(true);
 				} catch (NullPointerException e2) {
 					alert("Could not find reservation", "Error");
+					actionAdminRefundReservationButton.setVisible(false);
+				}
+			}
+        	
+        } else if(actionCommand.equals(TicketPOSGUI.BUTTON_CAPTION_ADMIN_REFUND_RESERVATION)) {
+        	
+        	String      reservationNumber = adminSearchReservationTextField.getText();
+        	
+        	if (reservationNumber.isEmpty()) {
+				alert("Cannot refund this reservation", "Error");
+				actionAdminRefundReservationButton.setVisible(false);
+			} else {
+				
+				try {
+					Reservation reservation   = reservations.get(reservationNumber);
+		        	String      movieDate     = reservation.getTicketInfo().getMovieDate();
+		        	String      movieTitle    = reservation.getTicketInfo().getMovie().getTitle();
+		        	String      movieTimeStr  = reservation.getTicketInfo().getMovieTime();   
+		        	MovieTime   movieTime     = new MovieTime(movieTimeStr);
+		        	int         numberTickets = reservation.getTicketInfo().getPay().getNumTickets();
+		        	
+		        	int movieTimeIndex     = movieMenu.getMenuItems().get(movieTitle).getSchedule().get(movieDate).getIndexByTime(movieTime);
+		        	
+		        	// update number of seats
+		        	movieMenu.getMenuItems().get(movieTitle).getSchedule().get(movieDate).getTimes().get(movieTimeIndex).addRemainingSeats(numberTickets);
+		        			
+		        	// refund (remove) not needed reservation
+		        	reservations.remove(reservationNumber);
+		        	
+		        	actionAdminRefundReservationButton.setVisible(false);
+		        	
+		        	adminconsoleTextArea.setText("Refunded");
+		        	alert("Reservations was refunded", "Info");
+		        	
+				} catch (NullPointerException e2) {
+					alert("Cannot refund this reservation", "Error");
+					actionAdminRefundReservationButton.setVisible(false);
 				}
 			}
         	
@@ -1278,7 +1327,9 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
 			// if user is not logged in show login screen
 			if(! isAdmin()) {
 				showPanel(loginMainPanel);
-			} else {				
+			} else {		
+				
+				adminReservationsPanel.removeAll();
 				
 				// Column Names 
 		        String[] reservationsTableCollumn = { "Reservation Number", "Movie", "Date", "Time", "Theater", "First Name", "Last Name", "Email", "Total", "Reservation Time"}; 
@@ -1327,6 +1378,9 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
 		        scrollPane.setSize(new Dimension(1200, 500));
 				
 		        adminReservationsPanel.add(scrollPane);
+		        
+		        adminReservationsPanel.revalidate();
+		        adminReservationsPanel.repaint();
 				
 				showPanel(adminReservationsPanel);
 			}

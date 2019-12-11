@@ -25,6 +25,17 @@ public class MovieSchedule {
 		return timesForDay;
 	}
 	
+	public int getIndexByTime(MovieTime movieTime) {
+		int index;
+		for (index = 0; index < times.size(); index++) {
+			if(times.get(index).getMovieTime().equals(movieTime)) {
+				return index;
+			}
+			index++;
+		}
+		return index;
+	}
+	
 	public List<MovieScheduleItem> getTimes() {
 		return times;
 	}

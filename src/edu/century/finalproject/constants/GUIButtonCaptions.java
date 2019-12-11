@@ -14,7 +14,8 @@ public interface GUIButtonCaptions {
 	public static final String BUTTON_CAPTION_ORDER_TEST_VALUES      = "Test Values";
 	public static final String BUTTON_CAPTION_ORDER_RESET_FORM       = "Reset Form";
 	
-	public static final String BUTTON_CAPTION_ADMIN_FIND_RESERVATION = "Find Reservation";
+	public static final String BUTTON_CAPTION_ADMIN_FIND_RESERVATION   = "Find Reservation";
+	public static final String BUTTON_CAPTION_ADMIN_REFUND_RESERVATION = "Refund Reservation";
 	
 	public static final String BUTTON_CAPTION_ADMIN_SET_PRICE         = "Update Price";
 	public static final String BUTTON_CAPTION_ADMIN_SET_EMAIL_SENDING = "Update Email Settings";
