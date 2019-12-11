@@ -60,13 +60,12 @@ public class MovieMenuCollection {
 			
 		filteredCollection = filterByValue(
 				menuItems, 
-				x -> (
-						(
-								x.getMovie().getTitle().toLowerCase().contains(searchString.toLowerCase()) 
-						)
-						&& 
-						x.getMovie().genres.contains(searchGenre)
-				)
+				x -> (x.getMovie().getTitle().toLowerCase().contains(searchString.toLowerCase()))
+		);
+		
+		filteredCollection = filterByValue(
+				filteredCollection, 
+				x -> (x.getMovie().genres.contains(searchGenre))
 		);
 		
 		return filteredCollection;
@@ -76,23 +75,15 @@ public class MovieMenuCollection {
 		
 		Map<String, MovieMenuItem> filteredCollection;
 		String searchDate = "2019-12-11";
-		
-//		System.out.println("test");
-//		System.out.println("Last Christmas");
-//		System.out.println(menuItems.get("Last Christmas").getSchedule().get(searchDate).getScheduleForDay().get(0));
-//		System.out.println(menuItems.get("Last Christmas").getSchedule().get(searchDate).getScheduleForDay().get(0).getMovieTime().equals(searchTime));
-//		System.out.println(menuItems.get("Last Christmas").getSchedule().get(searchDate).getScheduleForDay().get(1));
-//		System.out.println(menuItems.get("Last Christmas").getSchedule().get(searchDate).getScheduleForDay().get(1).getMovieTime().equals(searchTime));
 			
 		filteredCollection = filterByValue(
 				menuItems, 
-				x -> (
-						(
-								x.getMovie().getTitle().toLowerCase().contains(searchString.toLowerCase()) 
-						)
-						&& 
-						x.getSchedule().get(searchDate).getScheduleForDayTimesOnly().contains(searchTime)
-				)
+				x -> (x.getMovie().getTitle().toLowerCase().contains(searchString.toLowerCase()))
+		);
+		
+		filteredCollection = filterByValue(
+				filteredCollection, 
+				x -> (x.getSchedule().get(searchDate).getScheduleForDayTimesOnly().contains(searchTime))
 		);
 		
 		return filteredCollection;
@@ -107,25 +98,29 @@ public class MovieMenuCollection {
 			
 			filteredCollection = filterByValue(
 					menuItems, 
-					x -> (
-							x.getMovie().genres.contains(searchGenre)
-					)
+					x -> (x.getMovie().genres.contains(searchGenre))
+			);
+			
+			filteredCollection = filterByValue(
+					filteredCollection, 
+					x -> (x.getSchedule().get(searchDate).getScheduleForDayTimesOnly().contains(searchTime))
 			);
 			
 		} else {
 			
 			filteredCollection = filterByValue(
 					menuItems, 
-					x -> (
-							(
-									x.getMovie().getTitle().toLowerCase().contains(searchString.toLowerCase()) 
-									|| x.getMovie().getDescription().toLowerCase().contains(searchString.toLowerCase())
-							)
-							&& 
-								x.getMovie().genres.contains(searchGenre)
-							&& 
-								x.getSchedule().get(searchDate).getTimes().contains(searchTime)
-					)
+					x -> (x.getMovie().getTitle().toLowerCase().contains(searchString.toLowerCase()))
+			);
+			
+			filteredCollection = filterByValue(
+					filteredCollection, 
+					x -> (x.getMovie().genres.contains(searchGenre))
+			);
+			
+			filteredCollection = filterByValue(
+					filteredCollection, 
+					x -> (x.getSchedule().get(searchDate).getScheduleForDayTimesOnly().contains(searchTime))
 			);
 		}
 		
