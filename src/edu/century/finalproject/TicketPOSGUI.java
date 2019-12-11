@@ -910,7 +910,30 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
 		        } 
 		        
 		        updateMovieMenu(tempMap);	
+			
+			} else if(sortBy.equalsIgnoreCase("Duration")) {
 				
+				
+				// Create a list from elements of HashMap 
+		        List<Map.Entry<String, MovieMenuItem> > list = 
+		               new LinkedList<Map.Entry<String, MovieMenuItem> >(filteredCollection.entrySet()); 
+		  
+		        // Sort the list 
+		        Collections.sort(list, new Comparator<Map.Entry<String, MovieMenuItem> >() { 
+		            public int compare(Map.Entry<String, MovieMenuItem> o1,  
+		                               Map.Entry<String, MovieMenuItem> o2) 
+		            { 
+		            	return (o1.getValue().getMovie().getDuration() - o2.getValue().getMovie().getDuration()); 
+		            } 
+		        }); 
+		          
+		        // put data from sorted list to hashmap  
+		        Map<String, MovieMenuItem> tempMap = new LinkedHashMap<String, MovieMenuItem>(); 
+		        for (Map.Entry<String, MovieMenuItem> aa : list) { 
+		            tempMap.put(aa.getKey(), aa.getValue()); 
+		        } 
+		        
+		        updateMovieMenu(tempMap);	
 				
         	} else {        		
         		updateMovieMenu(filteredCollection);	

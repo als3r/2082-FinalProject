@@ -60,7 +60,7 @@ public interface GUIConstants {
 	 */
 	public static final String[] SORT_OPTIONS_ARRAY = 
 	{
-		"Select Sort", "Title"
+		"Select Sort", "Title", "Duration"
 	};
 	
 	/**
