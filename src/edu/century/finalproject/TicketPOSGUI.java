@@ -52,6 +52,10 @@ import java.util.Map;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+
+// SendGrid
 import com.sendgrid.*;
 import java.io.IOException;
 
@@ -79,8 +83,9 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
 	/**
 	 * Admin privileges
 	 */
-	private boolean isAdmin = false;
+	private boolean isAdmin        = false;
 	private boolean isEmailEnabled = true;
+	private double  price          = 5;
 	
     /**
      * JTextField for Movie Search
@@ -115,6 +120,7 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
     private JLabel movieDescriptionLabel          = new JLabel();
     private JLabel movieTimesLabel                = new JLabel();
     private JLabel movieGenresLabel               = new JLabel();
+    private JLabel movieTicketsLeftLabel          = new JLabel();
     
     // Display Reservation Details on Confirmation Page
     private JLabel confirmationNumberLabel        = new JLabel();
@@ -310,7 +316,7 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
         	arrayTimes[i] = times.get(i).toString();
 		}
         timeSelectorBox = new JComboBox(arrayTimes);
-//        timeSelectorBox = new JComboBox();
+        
         
         String[] arrayDate = {"2019-12-11 Wednesday","2019-12-12 Thursday","2019-12-13 Friday","2019-12-14 Saturday","2019-12-15 Sunday"};
         orderTicketsDateSelectorBox = new JComboBox(arrayDate);
@@ -508,80 +514,91 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
         mainLayout.putConstraint(SpringLayout.WEST,  actionBackButton, TicketPOSGUI.LAYOUT_PADDING_1, SpringLayout.WEST, orderPageMainPanel);
         mainLayout.putConstraint(SpringLayout.NORTH, actionBackButton, TicketPOSGUI.LAYOUT_HEIGHT_1, SpringLayout.NORTH, orderPageMainPanel);
         mainLayout.putConstraint(SpringLayout.WEST,  TicketPOSGUI.SELECT_TICKETS_LABEL, TicketPOSGUI.LAYOUT_PADDING_14, SpringLayout.WEST, orderPageMainPanel);
-        mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.SELECT_TICKETS_LABEL, TicketPOSGUI.LAYOUT_HEIGHT_2, SpringLayout.NORTH, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.SELECT_TICKETS_LABEL, TicketPOSGUI.LAYOUT_HEIGHT_1+20, SpringLayout.NORTH, orderPageMainPanel);
         TicketPOSGUI.SELECT_TICKETS_LABEL.setFont(GUIFonts.FONT_18);
         
         
         
         mainLayout.putConstraint(SpringLayout.WEST,  TicketPOSGUI.PAYMENT_FORM_LABEL, TicketPOSGUI.LAYOUT_PADDING_14, SpringLayout.WEST, orderPageMainPanel);
-        mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.PAYMENT_FORM_LABEL, TicketPOSGUI.LAYOUT_HEIGHT_7, SpringLayout.NORTH, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.PAYMENT_FORM_LABEL, TicketPOSGUI.LAYOUT_HEIGHT_8, SpringLayout.NORTH, orderPageMainPanel);
         TicketPOSGUI.PAYMENT_FORM_LABEL.setFont(GUIFonts.FONT_18);
        
         // Row - Select Date
+        mainLayout.putConstraint(SpringLayout.WEST,  TicketPOSGUI.TICKETS_AVAILABLE_LABEL, TicketPOSGUI.LAYOUT_PADDING_14, SpringLayout.WEST, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.TICKETS_AVAILABLE_LABEL, TicketPOSGUI.LAYOUT_HEIGHT_2+25, SpringLayout.NORTH, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.WEST,  movieTicketsLeftLabel,  LAYOUT_PADDING_16, SpringLayout.WEST, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, movieTicketsLeftLabel,  LAYOUT_HEIGHT_2+25, SpringLayout.NORTH, orderPageMainPanel);
+        TicketPOSGUI.TICKETS_AVAILABLE_LABEL.setFont(GUIFonts.FONT_18);
+        movieTicketsLeftLabel.setFont(GUIFonts.FONT_18);
+        
+        
+        // Row - Select Date
         mainLayout.putConstraint(SpringLayout.WEST,  TicketPOSGUI.SELECT_TICKETS_DATE_LABEL, TicketPOSGUI.LAYOUT_PADDING_14, SpringLayout.WEST, orderPageMainPanel);
-        mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.SELECT_TICKETS_DATE_LABEL, TicketPOSGUI.LAYOUT_HEIGHT_3, SpringLayout.NORTH, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.SELECT_TICKETS_DATE_LABEL, TicketPOSGUI.LAYOUT_HEIGHT_4, SpringLayout.NORTH, orderPageMainPanel);
         mainLayout.putConstraint(SpringLayout.WEST,  orderTicketsDateSelectorBox,  LAYOUT_PADDING_16, SpringLayout.WEST, orderPageMainPanel);
-        mainLayout.putConstraint(SpringLayout.NORTH, orderTicketsDateSelectorBox,  LAYOUT_HEIGHT_3, SpringLayout.NORTH, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, orderTicketsDateSelectorBox,  LAYOUT_HEIGHT_4, SpringLayout.NORTH, orderPageMainPanel);
         
         // Row - Select Time
         mainLayout.putConstraint(SpringLayout.WEST,  TicketPOSGUI.SELECT_TICKETS_TIME_LABEL, TicketPOSGUI.LAYOUT_PADDING_14, SpringLayout.WEST, orderPageMainPanel);
-        mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.SELECT_TICKETS_TIME_LABEL, TicketPOSGUI.LAYOUT_HEIGHT_4, SpringLayout.NORTH, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.SELECT_TICKETS_TIME_LABEL, TicketPOSGUI.LAYOUT_HEIGHT_5, SpringLayout.NORTH, orderPageMainPanel);
         mainLayout.putConstraint(SpringLayout.WEST,  orderTicketsTimeSelectorBox,  LAYOUT_PADDING_16, SpringLayout.WEST, orderPageMainPanel);
-        mainLayout.putConstraint(SpringLayout.NORTH, orderTicketsTimeSelectorBox,  LAYOUT_HEIGHT_4, SpringLayout.NORTH, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, orderTicketsTimeSelectorBox,  LAYOUT_HEIGHT_5, SpringLayout.NORTH, orderPageMainPanel);
         
         // Row - Select Number Tickets
         mainLayout.putConstraint(SpringLayout.WEST,  TicketPOSGUI.SELECT_TICKETS_NUMBER_LABEL, TicketPOSGUI.LAYOUT_PADDING_14, SpringLayout.WEST, orderPageMainPanel);
-        mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.SELECT_TICKETS_NUMBER_LABEL, TicketPOSGUI.LAYOUT_HEIGHT_5, SpringLayout.NORTH, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.SELECT_TICKETS_NUMBER_LABEL, TicketPOSGUI.LAYOUT_HEIGHT_6, SpringLayout.NORTH, orderPageMainPanel);
         mainLayout.putConstraint(SpringLayout.WEST,  orderTicketsNumberTicketsSelectorBox,  LAYOUT_PADDING_16, SpringLayout.WEST, orderPageMainPanel);
-        mainLayout.putConstraint(SpringLayout.NORTH, orderTicketsNumberTicketsSelectorBox,  LAYOUT_HEIGHT_5, SpringLayout.NORTH, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, orderTicketsNumberTicketsSelectorBox,  LAYOUT_HEIGHT_6, SpringLayout.NORTH, orderPageMainPanel);
         
         // Row - Customer First Name
         mainLayout.putConstraint(SpringLayout.WEST,  TicketPOSGUI.CUSTOMER_FIRST_NAME_LABEL, TicketPOSGUI.LAYOUT_PADDING_14, SpringLayout.WEST, orderPageMainPanel);
-        mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.CUSTOMER_FIRST_NAME_LABEL, TicketPOSGUI.LAYOUT_HEIGHT_8+20, SpringLayout.NORTH, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.CUSTOMER_FIRST_NAME_LABEL, TicketPOSGUI.LAYOUT_HEIGHT_9+20, SpringLayout.NORTH, orderPageMainPanel);
         mainLayout.putConstraint(SpringLayout.WEST,  customerFirstNameTextField,  LAYOUT_PADDING_16, SpringLayout.WEST, orderPageMainPanel);
-        mainLayout.putConstraint(SpringLayout.NORTH, customerFirstNameTextField,  LAYOUT_HEIGHT_8+20, SpringLayout.NORTH, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, customerFirstNameTextField,  LAYOUT_HEIGHT_9+20, SpringLayout.NORTH, orderPageMainPanel);
         // Row - Customer Last Name
         mainLayout.putConstraint(SpringLayout.WEST,  TicketPOSGUI.CUSTOMER_LAST_NAME_LABEL, TicketPOSGUI.LAYOUT_PADDING_14, SpringLayout.WEST, orderPageMainPanel);
-        mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.CUSTOMER_LAST_NAME_LABEL, TicketPOSGUI.LAYOUT_HEIGHT_9+20, SpringLayout.NORTH, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.CUSTOMER_LAST_NAME_LABEL, TicketPOSGUI.LAYOUT_HEIGHT_10+20, SpringLayout.NORTH, orderPageMainPanel);
         mainLayout.putConstraint(SpringLayout.WEST,  customerLastNameTextField,  LAYOUT_PADDING_16, SpringLayout.WEST, orderPageMainPanel);
-        mainLayout.putConstraint(SpringLayout.NORTH, customerLastNameTextField,  LAYOUT_HEIGHT_9+20, SpringLayout.NORTH, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, customerLastNameTextField,  LAYOUT_HEIGHT_10+20, SpringLayout.NORTH, orderPageMainPanel);
         // Row - Customer Email
         mainLayout.putConstraint(SpringLayout.WEST,  TicketPOSGUI.CUSTOMER_EMAIL_LABEL, TicketPOSGUI.LAYOUT_PADDING_14, SpringLayout.WEST, orderPageMainPanel);
-        mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.CUSTOMER_EMAIL_LABEL, TicketPOSGUI.LAYOUT_HEIGHT_10+20, SpringLayout.NORTH, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.CUSTOMER_EMAIL_LABEL, TicketPOSGUI.LAYOUT_HEIGHT_11+20, SpringLayout.NORTH, orderPageMainPanel);
         mainLayout.putConstraint(SpringLayout.WEST,  customerEmailTextField,  LAYOUT_PADDING_16, SpringLayout.WEST, orderPageMainPanel);
-        mainLayout.putConstraint(SpringLayout.NORTH, customerEmailTextField,  LAYOUT_HEIGHT_10+20, SpringLayout.NORTH, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, customerEmailTextField,  LAYOUT_HEIGHT_11+20, SpringLayout.NORTH, orderPageMainPanel);
         // Row - Customer Card Number
         mainLayout.putConstraint(SpringLayout.WEST,  TicketPOSGUI.CARD_NUMBER_LABEL, TicketPOSGUI.LAYOUT_PADDING_14, SpringLayout.WEST, orderPageMainPanel);
-        mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.CARD_NUMBER_LABEL, TicketPOSGUI.LAYOUT_HEIGHT_11+20, SpringLayout.NORTH, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.CARD_NUMBER_LABEL, TicketPOSGUI.LAYOUT_HEIGHT_12+20, SpringLayout.NORTH, orderPageMainPanel);
         mainLayout.putConstraint(SpringLayout.WEST,  cardNumberTextField,  LAYOUT_PADDING_16, SpringLayout.WEST, orderPageMainPanel);
-        mainLayout.putConstraint(SpringLayout.NORTH, cardNumberTextField,  LAYOUT_HEIGHT_11+20, SpringLayout.NORTH, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, cardNumberTextField,  LAYOUT_HEIGHT_12+20, SpringLayout.NORTH, orderPageMainPanel);
         // Row - Customer Card Expiration
         mainLayout.putConstraint(SpringLayout.WEST,  TicketPOSGUI.CARD_EXP_MONTH_LABEL, TicketPOSGUI.LAYOUT_PADDING_14, SpringLayout.WEST, orderPageMainPanel);
-        mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.CARD_EXP_MONTH_LABEL, TicketPOSGUI.LAYOUT_HEIGHT_12+20, SpringLayout.NORTH, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.CARD_EXP_MONTH_LABEL, TicketPOSGUI.LAYOUT_HEIGHT_13+20, SpringLayout.NORTH, orderPageMainPanel);
         mainLayout.putConstraint(SpringLayout.WEST,  cardExpMonthTextField,  LAYOUT_PADDING_16, SpringLayout.WEST, orderPageMainPanel);
-        mainLayout.putConstraint(SpringLayout.NORTH, cardExpMonthTextField,  LAYOUT_HEIGHT_12+20, SpringLayout.NORTH, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, cardExpMonthTextField,  LAYOUT_HEIGHT_13+20, SpringLayout.NORTH, orderPageMainPanel);
         mainLayout.putConstraint(SpringLayout.WEST,  TicketPOSGUI.CARD_EXP_YEAR_LABEL, TicketPOSGUI.LAYOUT_PADDING_18, SpringLayout.WEST, orderPageMainPanel);
-        mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.CARD_EXP_YEAR_LABEL, TicketPOSGUI.LAYOUT_HEIGHT_12+20, SpringLayout.NORTH, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.CARD_EXP_YEAR_LABEL, TicketPOSGUI.LAYOUT_HEIGHT_13+20, SpringLayout.NORTH, orderPageMainPanel);
         mainLayout.putConstraint(SpringLayout.WEST,  cardExpYearTextField,  LAYOUT_PADDING_1, SpringLayout.EAST, TicketPOSGUI.CARD_EXP_YEAR_LABEL);
-        mainLayout.putConstraint(SpringLayout.NORTH, cardExpYearTextField,  LAYOUT_HEIGHT_12+20, SpringLayout.NORTH, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, cardExpYearTextField,  LAYOUT_HEIGHT_13+20, SpringLayout.NORTH, orderPageMainPanel);
         // Row - Customer Card Zip Code
         mainLayout.putConstraint(SpringLayout.WEST,  TicketPOSGUI.CARD_ZIP_LABEL, TicketPOSGUI.LAYOUT_PADDING_14, SpringLayout.WEST, orderPageMainPanel);
-        mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.CARD_ZIP_LABEL, TicketPOSGUI.LAYOUT_HEIGHT_13+20, SpringLayout.NORTH, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.CARD_ZIP_LABEL, TicketPOSGUI.LAYOUT_HEIGHT_14+20, SpringLayout.NORTH, orderPageMainPanel);
         mainLayout.putConstraint(SpringLayout.WEST,  cardZipTextField,  LAYOUT_PADDING_16, SpringLayout.WEST, orderPageMainPanel);
-        mainLayout.putConstraint(SpringLayout.NORTH, cardZipTextField,  LAYOUT_HEIGHT_13+20, SpringLayout.NORTH, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, cardZipTextField,  LAYOUT_HEIGHT_14+20, SpringLayout.NORTH, orderPageMainPanel);
         // Row - Order Button
         mainLayout.putConstraint(SpringLayout.WEST,  actionOrderButton, TicketPOSGUI.LAYOUT_PADDING_14, SpringLayout.WEST, orderPageMainPanel);
-        mainLayout.putConstraint(SpringLayout.NORTH, actionOrderButton, TicketPOSGUI.LAYOUT_HEIGHT_15, SpringLayout.NORTH, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, actionOrderButton, TicketPOSGUI.LAYOUT_HEIGHT_16, SpringLayout.NORTH, orderPageMainPanel);
         mainLayout.putConstraint(SpringLayout.WEST,  actionOrderTestValuesButton, TicketPOSGUI.LAYOUT_PADDING_1, SpringLayout.EAST, actionOrderButton);
-        mainLayout.putConstraint(SpringLayout.NORTH, actionOrderTestValuesButton, TicketPOSGUI.LAYOUT_HEIGHT_15, SpringLayout.NORTH, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, actionOrderTestValuesButton, TicketPOSGUI.LAYOUT_HEIGHT_16, SpringLayout.NORTH, orderPageMainPanel);
         mainLayout.putConstraint(SpringLayout.WEST,  actionOrderResetFormButton, TicketPOSGUI.LAYOUT_PADDING_1, SpringLayout.EAST, actionOrderTestValuesButton);
-        mainLayout.putConstraint(SpringLayout.NORTH, actionOrderResetFormButton, TicketPOSGUI.LAYOUT_HEIGHT_15, SpringLayout.NORTH, orderPageMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, actionOrderResetFormButton, TicketPOSGUI.LAYOUT_HEIGHT_16, SpringLayout.NORTH, orderPageMainPanel);
         
         // Add elements to Login Panel
         orderPageMainPanel.add(TicketPOSGUI.SELECT_TICKETS_LABEL);
+        orderPageMainPanel.add(TicketPOSGUI.TICKETS_AVAILABLE_LABEL);
         orderPageMainPanel.add(TicketPOSGUI.SELECT_TICKETS_DATE_LABEL);
         orderPageMainPanel.add(TicketPOSGUI.SELECT_TICKETS_TIME_LABEL);
         orderPageMainPanel.add(TicketPOSGUI.SELECT_TICKETS_NUMBER_LABEL);
+        orderPageMainPanel.add(movieTicketsLeftLabel);
         orderPageMainPanel.add(orderTicketsTimeSelectorBox);
         orderPageMainPanel.add(orderTicketsDateSelectorBox);
         orderPageMainPanel.add(orderTicketsNumberTicketsSelectorBox);
@@ -792,6 +809,18 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
         // add main panel to the window
         add(mainWindowPanel);
         
+        orderTicketsTimeSelectorBox.addActionListener (new ActionListener () {
+            public void actionPerformed(ActionEvent e) {
+            	updateRemaningSeats();
+            }
+        });
+        
+        orderTicketsDateSelectorBox.addActionListener (new ActionListener () {
+            public void actionPerformed(ActionEvent e) {
+            	updateRemaningSeats();
+            }
+        });
+        
         // hide all panels and show customer panel by default
         hideAllPanels();
         customerViewPanel.setVisible(true);    
@@ -822,115 +851,149 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
         	        	
         } else if(actionCommand.equals(TicketPOSGUI.BUTTON_CAPTION_BACK)) {
 			
+        	// Reset selected movie
+        	chosenMovieIndex = "";
 			// From Order Page, Show Customer (Default) Panel (Screen)
 			showPanel(customerViewPanel);
-			// Reset selected movie
-			chosenMovieIndex = "";
 			
         } else if(actionCommand.equals(TicketPOSGUI.BUTTON_CAPTION_EXIT)) {
 			
+        	// Reset current information and selected movie
+        	chosenMovieIndex = "";	
 			// From Confirmation Page, Show Customer (Default) Panel (Screen)
 			showPanel(customerViewPanel);
-			// Reset current information and selected movie
-			chosenMovieIndex = "";	
 			
         } else if(actionCommand.equals(TicketPOSGUI.BUTTON_CAPTION_ORDER)) {
 			
 			// From Order Page, Process Payment, Order Tickets
+        	String err_msg = validateForm();
         	
-        	int numberTickets   = Integer.valueOf(orderTicketsNumberTicketsSelectorBox.getSelectedItem().toString());
-        	String selectedTime = String.valueOf(orderTicketsTimeSelectorBox.getSelectedItem());
-        	String selectedDate = String.valueOf(orderTicketsDateSelectorBox.getSelectedItem()).substring(0, 10);
-        	
-        	String cardNumber   = cardNumberTextField.getText();
-        	String cardExpMonth = cardExpMonthTextField.getText();
-        	String cardExpYear  = cardExpYearTextField.getText();
-        	String cardZipCode  = cardZipTextField.getText();
-        	
-        	String firstName    = customerFirstNameTextField.getText();
-        	String lastName     = customerLastNameTextField.getText();
-        	String email        = customerEmailTextField.getText();
-        	Person customer     = new Person(firstName, lastName, email);
-        	
-        	Payment payment     = new Payment(customer, numberTickets, cardNumber);
-        		 
-        	Ticket ticket       = new Ticket();
-        	ticket.setPerson(customer);
-        	ticket.setMovie(movieMenu.getMenuItems().get(chosenMovieIndex).getMovie());
-        	ticket.setTheater(
+        	if(!err_msg.isEmpty()) {
+        		alert(err_msg, "Form Validation Error");
+        	} else {
+        		int numberTickets   = Integer.parseInt(orderTicketsNumberTicketsSelectorBox.getSelectedItem().toString());
+            	String selectedTime = String.valueOf(orderTicketsTimeSelectorBox.getSelectedItem());
+            	String selectedDate = String.valueOf(orderTicketsDateSelectorBox.getSelectedItem()).substring(0, 10);
+            	
+            	String cardNumber   = cardNumberTextField.getText();
+            	String cardExpMonth = cardExpMonthTextField.getText();
+            	String cardExpYear  = cardExpYearTextField.getText();
+            	String cardZipCode  = cardZipTextField.getText();
+            	
+            	
+            	// Check if tickets are available
+            	int remainingSeats = movieMenu.getMenuItems()
+            			.get(chosenMovieIndex)
+            			.getSchedule()
+            			.get(selectedDate)
+            			.getTimes()
+            			.get(orderTicketsTimeSelectorBox.getSelectedIndex()-1)
+            			.getRemainingSeats();
+            	
+            	if(remainingSeats < numberTickets) {
+            		
+            		String message;
+            		if(remainingSeats > 0) {
+            			message = "Only " + remainingSeats + " seats left. Please choose other time.";
+            		} else {
+            			message = "No seats left. Please choose other time.";
+            		}
+            		
+            		alert(message, "Cannot Purchase");
+            		
+
+            	} else {
+            		
+            		System.out.println("Remaning Seats: " + remainingSeats);
+                	
+                	// Create Customer
+                	String firstName    = customerFirstNameTextField.getText();
+                	String lastName     = customerLastNameTextField.getText();
+                	String email        = customerEmailTextField.getText();
+                	Person customer     = new Person(firstName, lastName, email);
+                	
+                	// Create Payment
+                	Payment payment     = new Payment(customer, numberTickets, cardNumber);
+                		 
+                	// Create Ticket
+                	Ticket ticket       = new Ticket();
+                	ticket.setPerson(customer);
+                	ticket.setMovie(movieMenu.getMenuItems().get(chosenMovieIndex).getMovie());
+                	ticket.setTheater(
+                			movieMenu.getMenuItems()
+                			.get(chosenMovieIndex)
+                			.getSchedule()
+                			.get(selectedDate)
+                			.getTimes()
+                			.get(orderTicketsTimeSelectorBox.getSelectedIndex()-1)
+                			.getTheater()
+        			);
+                	ticket.setPay(payment);
+                	ticket.setMovieTime(selectedTime);
+                	ticket.setMovieDate(selectedDate);
+
+                	// Add Info To Reservation
+                	reservation.setTicketInfo(ticket);
+                	reservation.setReserveDate(selectedDate);
+                	reservation.setTicketInfo(ticket);
+             
+                	// display confirmation details on confirmation page
+                	confirmationNumberLabel.setText(String.valueOf(reservation.getReservationNumber()));
+                	confirmationNameLabel.setText(reservation.getTicketInfo().getPerson().getFirstName() + " " + reservation.getTicketInfo().getPerson().getLastName());
+                    confirmationEmailLabel.setText(reservation.getTicketInfo().getPerson().getEmail());
+                    confirmationMovieLabel.setText(reservation.getTicketInfo().getMovie().getTitle());
+                    confirmationDateLabel.setText(String.valueOf(reservation.getTicketInfo().getMovieDate()));
+                    confirmationTimeLabel.setText(String.valueOf(reservation.getTicketInfo().getMovieTime()));
+                    confirmationTheaterLabel.setText(String.valueOf(reservation.getTicketInfo().getTheater().getName()));
+                    confirmationNumberTicketsLabel.setText(String.valueOf(reservation.getTicketInfo().getPay().getNumTickets()));
+                    confirmationTotalLabel.setText("$" + String.valueOf(reservation.getTicketInfo().getPay().getTotal()) + "0");
+                	
+        			showPanel(confirmationPageMainPanel);
+        			
         			movieMenu.getMenuItems()
         			.get(chosenMovieIndex)
         			.getSchedule()
         			.get(selectedDate)
         			.getTimes()
         			.get(orderTicketsTimeSelectorBox.getSelectedIndex()-1)
-        			.getTheater()
-			);
-        	ticket.setPay(payment);
-        	ticket.setMovieTime(selectedTime);
-        	ticket.setMovieDate(selectedDate);
+        			.substractRemainingSeats(numberTickets);
+        			
+        			// Send Out Confirmation Email
+        			if(isEmailEnabled) {
+        				
+        				String contentEmail = "Confirmation Email" + "\n\n";
+        				contentEmail += reservation.toString();
+        				
+        				
+        				Email   from    = new Email("sergeyev.alex@gmail.com");
+        			    Email   to      = new Email(customer.getEmail());
+        			    String  subject = "TicketPOS - Confirmation Email";
+        			    Content content = new Content("text/plain", contentEmail);
 
-        	reservation.setTicketInfo(ticket);
-        	reservation.setReserveDate(selectedDate);
-        	reservation.setTicketInfo(ticket);
-     
-        	// display confirmation details on confirmation page
-        	confirmationNumberLabel.setText(String.valueOf(reservation.getReservationNumber()));
-        	confirmationNameLabel.setText(reservation.getTicketInfo().getPerson().getFirstName() + " " + reservation.getTicketInfo().getPerson().getLastName());
-            confirmationEmailLabel.setText(reservation.getTicketInfo().getPerson().getEmail());
-            confirmationMovieLabel.setText(reservation.getTicketInfo().getMovie().getTitle());
-            confirmationDateLabel.setText(String.valueOf(reservation.getTicketInfo().getMovieDate()));
-            confirmationTimeLabel.setText(String.valueOf(reservation.getTicketInfo().getMovieTime()));
-            confirmationTheaterLabel.setText(String.valueOf(reservation.getTicketInfo().getTheater().getName()));
-            confirmationNumberTicketsLabel.setText(String.valueOf(reservation.getTicketInfo().getPay().getNumTickets()));
-            confirmationTotalLabel.setText("$" + String.valueOf(reservation.getTicketInfo().getPay().getTotal()) + "0");
-        	
-			showPanel(confirmationPageMainPanel);
-			
-//			TicketPOSGUI.CONFIRMATION_TICKET_TOSTRING_LABEL.setText(ticket.toString());
-//			TicketPOSGUI.CONFIRMATION_RESERVATION_TOSTRING_LABEL.setText(reservation.toString());
-			
-			System.out.println(ticket.toString());
-			System.out.println();
-			System.out.println(reservation.toString());
-			
-			System.out.println(isEmailEnabled);
-			
-			// Send Out Confirmation Email
-			if(isEmailEnabled) {
-				
-				String contentEmail = "Confirmation Email" + "\n\n";
-				contentEmail += reservation.toString();
-				
-				
-				Email   from    = new Email("sergeyev.alex@gmail.com");
-			    Email   to      = new Email(customer.getEmail());
-			    String  subject = "TicketPOS - Confirmation Email";
-			    Content content = new Content("text/plain", contentEmail);
-
-			    Mail   mail    = new Mail(from, subject, to, content);
-			    
-			    SendGrid sg = new SendGrid(SENDGRID_KEY);
-			    Request request = new Request();
-			    try {
-			      
-			    	request.setMethod(Method.POST);
-			      request.setEndpoint("mail/send");
-			      request.setBody(mail.build());
-			      Response response = sg.api(request);
-			      System.out.println(response.getStatusCode());
-			      System.out.println(response.getBody());
-			      System.out.println(response.getHeaders());
-			      
-			    } catch (IOException ex) {
-			    	ex.printStackTrace();
-			    }
-			}
-			
-			// Add current reservation to reservations storage and reset current reservation
-			reservations.put(String.valueOf(reservation.getReservationNumber()), reservation);
-			reservation = new Reservation();
-			
+        			    Mail   mail    = new Mail(from, subject, to, content);
+        			    
+        			    SendGrid sg = new SendGrid(SENDGRID_KEY);
+        			    Request request = new Request();
+        			    try {
+        			      
+        			    	request.setMethod(Method.POST);
+        			      request.setEndpoint("mail/send");
+        			      request.setBody(mail.build());
+        			      Response response = sg.api(request);
+        			      System.out.println(response.getStatusCode());
+        			      System.out.println(response.getBody());
+        			      System.out.println(response.getHeaders());
+        			      
+        			    } catch (IOException ex) {
+        			    	ex.printStackTrace();
+        			    }
+        			}
+        			
+        			// Add current reservation to reservations storage and reset current reservation
+        			reservations.put(String.valueOf(reservation.getReservationNumber()), reservation);
+        			reservation = new Reservation();
+            	}
+        	}
 			// END PURCHASE TICKETS
 			
         } else if(actionCommand.equals(TicketPOSGUI.BUTTON_CAPTION_ORDER_TEST_VALUES)) {
@@ -1234,6 +1297,7 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
 	    		// Choose Movie From Menu
 				String[] commandStringProcessed = actionCommand.split("_");
 				String movieTitle = commandStringProcessed[1];
+				chosenMovieIndex = movieTitle;
 				showMovie(movieTitle);
 				// Display Order Page
 				showPanel(orderPageMainPanel);
@@ -1365,7 +1429,7 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
 
     
     /**
-     * Validate report form
+     * Validate purchase form
      * 
      * @return String with error message, empty String if no error
      */
@@ -1373,22 +1437,42 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
     	
 		String errorMessage = "";
     	
+		if (orderTicketsNumberTicketsSelectorBox.getSelectedItem().toString().equalsIgnoreCase("Select Number Tickets")) {
+			errorMessage += "Please select number of tickets." + "\n";
+		} else {
+			int numberTickets   = Integer.parseInt(orderTicketsNumberTicketsSelectorBox.getSelectedItem().toString());
+			if(numberTickets == 0) {
+				errorMessage += "Please select number of tickets." + "\n";
+			}
+		}
+		
+		String selectedTime = String.valueOf(orderTicketsTimeSelectorBox.getSelectedItem());
+		if(selectedTime.equalsIgnoreCase("Select Time")) {
+			errorMessage += "Please select time." + "\n";
+		}
+		
     	// Validate  if input empty
-//    	if(employeeNameTextField.getText().isEmpty()) {
-//    		errorMessage += "Please enter employee name." + "\n";
-//    	}
-//    	if(hourlyWageTextField.getText().isEmpty()) {
-//    		errorMessage += "Please enter hourly wage." + "\n";
-//    	} else {
-//    		try {
-//    			if(Double.parseDouble(hourlyWageTextField.getText()) <= 0) {
-//            		errorMessage += "Hourly Wage should be more than 0." + "\n";
-//            	}
-//			} catch (java.lang.NumberFormatException e) {
-//				errorMessage += "Hourly Wage should be numer and more than 0." + "\n";
-//			}
-//    		
-//    	}
+    	if(customerFirstNameTextField.getText().isEmpty()) {
+    		errorMessage += "Please enter first name." + "\n";
+    	}
+    	if(customerLastNameTextField.getText().isEmpty()) {
+    		errorMessage += "Please enter last name." + "\n";
+    	}
+    	if(customerEmailTextField.getText().isEmpty()) {
+    		errorMessage += "Please enter email address." + "\n";
+    	}
+    	if(cardNumberTextField.getText().isEmpty()) {
+    		errorMessage += "Please enter card number." + "\n";
+    	}
+    	if(cardExpMonthTextField.getText().isEmpty()) {
+    		errorMessage += "Please enter expiration month (ex.: 12)." + "\n";
+    	}
+    	if(cardExpYearTextField.getText().isEmpty()) {
+    		errorMessage += "Please enter expiration year (ex.: 22)." + "\n";
+    	}
+    	if(cardZipTextField.getText().isEmpty()) {
+    		errorMessage += "Please enter zip code." + "\n";
+    	}
     	
     	return errorMessage;
     	
@@ -1396,12 +1480,47 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
     
     
     
+    private void updateRemaningSeats() {
+    	
+//    	System.out.println("test change listener");
+    	
+    	String selectedDate = String.valueOf(orderTicketsDateSelectorBox.getSelectedItem()).substring(0, 10);
+    	int selectedTimeIndex = orderTicketsTimeSelectorBox.getSelectedIndex();
+    	// to support "Select Time option"
+    	selectedTimeIndex = selectedTimeIndex <= 0 ? 1 : selectedTimeIndex;
+    	System.out.println("selectedTimeIndex: " + selectedTimeIndex);
+    	System.out.println("Chosen Movie: " + chosenMovieIndex);
+    	System.out.println("selectedDate: " + selectedDate);
+    	
+    	MovieMenuItem  movieMenuItem = movieMenu.getMenuItems().get(chosenMovieIndex);
+    	int availableTickets = movieMenuItem.getSchedule().get(selectedDate).getTimes().get(selectedTimeIndex-1).getRemainingSeats();
+    	
+    	System.out.println(selectedTimeIndex);
+    	System.out.println(selectedDate);
+    	System.out.println(availableTickets);
+    	
+    	
+    	if(availableTickets == 0) {
+    		movieTicketsLeftLabel.setText("No seats left");
+    	} else {
+    		movieTicketsLeftLabel.setText("Only " + String.valueOf(availableTickets) + " seats left!");
+    	}
+    }
+    
+    
     public void showMovie(String movieTitle) {
     	
     	MovieMenuItem           movieMenuItem = movieMenu.getMenuItems().get(movieTitle);
     	List<MovieScheduleItem> times         = movieMenuItem.getSchedule().get(defaultDate).getTimes();
     	Movie                   movie         = movieMenu.getMenuItems().get(movieTitle).getMovie();
+    	int                  availableTickets = movieMenuItem.getSchedule().get(defaultDate).getTimes().get(0).getRemainingSeats();
     	
+    	if(availableTickets == 0) {
+    		movieTicketsLeftLabel.setText("No seats left");
+    	} else {
+    		movieTicketsLeftLabel.setText("Only " + String.valueOf(availableTickets) + " seats left!");
+    	}
+    			
     	try {
 			ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 		    InputStream input = classLoader.getResourceAsStream("resources\\" + movie.getImage());

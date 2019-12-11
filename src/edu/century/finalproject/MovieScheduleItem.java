@@ -1,5 +1,7 @@
 package edu.century.finalproject;
 
+import java.util.Random;
+
 public class MovieScheduleItem {
 
 	private Theater   theater;
@@ -7,9 +9,13 @@ public class MovieScheduleItem {
 	private int       remainingSeats;
 	
 	MovieScheduleItem(Theater theater, MovieTime time){
+		
+		Random random    = new Random();
+		int randomNumber = random.nextInt(10);
+				
 		this.theater        = theater;
 		this.time           = time;
-		this.remainingSeats = theater.getCapacity();
+		this.remainingSeats = 0 + randomNumber;
 	}
 	
 	public Theater getTheater() {
@@ -30,6 +36,14 @@ public class MovieScheduleItem {
 
 	public int getRemainingSeats() {
 		return remainingSeats;
+	}
+	
+	public void addRemainingSeats(int number) {
+		remainingSeats += number;
+	}
+	
+	public void substractRemainingSeats(int number) {
+		remainingSeats -= number;
 	}
 
 	public void setRemainingSeats(int remainingSeats) {
