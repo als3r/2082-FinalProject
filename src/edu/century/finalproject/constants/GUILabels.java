@@ -48,7 +48,13 @@ public interface GUILabels {
     public static final JLabel CONFIRMATION_NUMBER_TICKETS_LABEL = new JLabel("Number of Tickets:");
     public static final JLabel CONFIRMATION_TOTAL_LABEL          = new JLabel("Total:");
     
-    public static final JLabel CONFIRMATION_RESERVATION_TOSTRING_LABEL = new JLabel("");
-    public static final JLabel CONFIRMATION_TICKET_TOSTRING_LABEL      = new JLabel("");
+    public static final JLabel ADMIN_SEARCH_RESERVATION_LABEL    = new JLabel("Search Reservation By Number: ");
+    
+    
+    public static final JLabel ADMIN_SETTINGS_LABEL              = new JLabel("SETTINGS");
+    public static final JLabel ADMIN_SET_PRICE_LABEL             = new JLabel("Price: ");
+    public static final JLabel ADMIN_SET_EMAIL_SENDING_LABEL     = new JLabel("Email Senging (0-disabled, 1-enabled)");
+    public static final JLabel ADMIN_SET_LOGIN_LABEL             = new JLabel("Login: ");
+    public static final JLabel ADMIN_SET_PASSWORD_LABEL          = new JLabel("Password: ");
     
 }

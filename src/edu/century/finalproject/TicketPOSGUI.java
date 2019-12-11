@@ -3,25 +3,13 @@ package edu.century.finalproject;
 import edu.century.finalproject.constants.*;
 
 import javax.swing.*;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.SpringLayout;
+
 import java.awt.GridLayout;
 import java.awt.BorderLayout;
-import javax.swing.JComboBox;
-import javax.swing.JPanel;
-import javax.swing.JLabel;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JButton;
-import javax.swing.JScrollPane;
-import javax.swing.ScrollPaneConstants;
+
 import javax.swing.border.TitledBorder;
 
 import javax.swing.border.EtchedBorder;
-import javax.swing.Action;
 import javax.imageio.ImageIO;
 import java.awt.Image;
 //import javafx.scene.image.Image;
@@ -83,9 +71,19 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
 	/**
 	 * Admin privileges
 	 */
-	private boolean isAdmin        = false;
-	private boolean isEmailEnabled = true;
-	private double  price          = 5;
+	private boolean isAdmin          = false;
+	private boolean isEmailEnabled   = false;
+	private double  movieTicketPrice = 5;
+	
+	/**
+	 * Admin Username
+	 */
+	public static String SECRET_USERNAME = "admin";
+	
+	/**
+	 * Admin Password
+	 */
+	public static String SECRET_PASSWORD = "12345";
 	
     /**
      * JTextField for Movie Search
@@ -112,6 +110,19 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
      */
     private JTextField loginUsernameTextField     = new JTextField(NUMBER_OF_CHAR_INPUT_MEDIUM);
     private JTextField loginPasswordTextField     = new JTextField(NUMBER_OF_CHAR_INPUT_MEDIUM);
+    
+    /**
+     * JTextField For Admins
+     */
+    private JTextField adminSearchReservationTextField = new JTextField(NUMBER_OF_CHAR_INPUT_MEDIUM);
+    private JTextField adminSetPriceTextField          = new JTextField(NUMBER_OF_CHAR_INPUT_MEDIUM);
+    private JTextField adminSetEmailSendTextField      = new JTextField(NUMBER_OF_CHAR_INPUT_MEDIUM);
+    private JTextField adminSetLoginTextField          = new JTextField(NUMBER_OF_CHAR_INPUT_MEDIUM);
+    private JTextField adminSetPasswordTextField       = new JTextField(NUMBER_OF_CHAR_INPUT_MEDIUM);
+    /**
+     * JTextArea for Admins
+     */
+    private JTextArea adminconsoleTextArea;
     
     // Display Selected Movie Details on Order/Purchase Page
     private BufferedImage bufferedImage           = null;
@@ -207,7 +218,7 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
     /**
      * JComboBox for sort selector
      */
-    private JComboBox<String> sortMoviesSelectorBox = new JComboBox(GUIConstants.SORT_OPTIONS_ARRAY); 
+    private JComboBox<String> sortMoviesSelectorBox = new JComboBox(); 
     
     
     /**
@@ -220,14 +231,10 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
 			  menuDemoConfirmationPageViewitem,
 			  menuDemoExitItem,
 		  	  menuLoginItem; 
-	JMenuItem menuAdminMoviesItem, 
-			  menuAdminTheatersItem,
-			  menuAdminTimesItem,
-			  menuAdminGenresItem,
-			  menuAdminScheduleItem, 
-			  menuAdminTicketsItem, 
+	JMenuItem menuAdminFindResrvationItem, 
+		      menuAdminSettingsItem, 
 			  menuAdminReservationsItem, 
-			  menuAdminSalesItem,
+			  menuAdminScheduleItem,
 			  menuAdminLogOutItem;
 	
 	/**
@@ -259,6 +266,9 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
 	// where admin can see movies, orders and edit data
 	// (view from admin perspective)
 	JPanel adminMainPanel;
+	JPanel adminReservationsPanel;
+	JPanel adminSchedulePanel;
+	JPanel adminSettingsPanel;
 	
 	// Order page
 	JPanel orderPageMainPanel;
@@ -309,17 +319,43 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
         	arrayGenres[i] = genres.get(i).getGenreName();
 		}
         genreSelectorBox = new JComboBox(arrayGenres);
-//        genreSelectorBox = new JComboBox();
+        genreSelectorBox.addActionListener (new ActionListener () {
+            public void actionPerformed(ActionEvent e) {
+            	searchMovies();
+            }
+        });
         
         String[] arrayTimes = new String[times.size()];
         for (int i = 0; i < times.size(); i++) {
         	arrayTimes[i] = times.get(i).toString();
 		}
         timeSelectorBox = new JComboBox(arrayTimes);
+        timeSelectorBox.addActionListener (new ActionListener () {
+            public void actionPerformed(ActionEvent e) {
+            	searchMovies();
+            }
+        });
+        
+        sortMoviesSelectorBox = new JComboBox(TicketPOSGUI.SORT_OPTIONS_ARRAY);
+        sortMoviesSelectorBox.addActionListener (new ActionListener () {
+            public void actionPerformed(ActionEvent e) {
+            	searchMovies();
+            }
+        });
         
         
         String[] arrayDate = {"2019-12-11 Wednesday","2019-12-12 Thursday","2019-12-13 Friday","2019-12-14 Saturday","2019-12-15 Sunday"};
         orderTicketsDateSelectorBox = new JComboBox(arrayDate);
+        orderTicketsDateSelectorBox.addActionListener (new ActionListener () {
+            public void actionPerformed(ActionEvent e) {
+            	updateRemaningSeats();
+            }
+        });
+        orderTicketsTimeSelectorBox.addActionListener (new ActionListener () {
+            public void actionPerformed(ActionEvent e) {
+            	updateRemaningSeats();
+            }
+        });
         
         // Create spring layout
         SpringLayout mainLayout = new SpringLayout();
@@ -370,6 +406,36 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
         // Populate Order Page With Test Values
         JButton actionOrderResetFormButton = new JButton(BUTTON_CAPTION_ORDER_RESET_FORM);
         actionOrderResetFormButton.addActionListener(this);
+        
+        // Search Reservation
+        JButton actionAdminSearchReservationButton = new JButton(BUTTON_CAPTION_ADMIN_FIND_RESERVATION);
+        actionAdminSearchReservationButton.addActionListener(this);
+        
+        // Update Price
+        JButton actionAdminUpdatePriceButton = new JButton(BUTTON_CAPTION_ADMIN_SET_PRICE);
+        actionAdminUpdatePriceButton.addActionListener(this);
+        
+        // Update Email Settings
+        JButton actionAdminUpdateEmailSettingsButton = new JButton(BUTTON_CAPTION_ADMIN_SET_EMAIL_SENDING);
+        actionAdminUpdateEmailSettingsButton.addActionListener(this);
+        
+        // Update Login
+        JButton actionAdminUpdateLoginButton = new JButton(BUTTON_CAPTION_ADMIN_SET_LOGIN);
+        actionAdminUpdateLoginButton.addActionListener(this);
+        
+        // Update Password
+        JButton actionAdminUpdatePasswordButton = new JButton(BUTTON_CAPTION_ADMIN_SET_PASSWORD);
+        actionAdminUpdatePasswordButton.addActionListener(this);
+        
+        
+        /**
+         * Text AreA
+         */
+        // text area
+        adminconsoleTextArea = new JTextArea(TEXTAREA_NUMBER_OF_LINES, TEXTAREA_NUMBER_OF_CHAR);
+        // add scroll to text area
+        JScrollPane scrollPanelTextArea = new JScrollPane(adminconsoleTextArea);
+        scrollPanelTextArea.setVerticalScrollBarPolicy ( ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS );
         
         
         
@@ -702,13 +768,7 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
         mainLayout.putConstraint(SpringLayout.WEST,  TicketPOSGUI.CONFIRMATION_TOTAL_LABEL, TicketPOSGUI.LAYOUT_PADDING_7, SpringLayout.WEST, confirmationPageMainPanel);
         mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.CONFIRMATION_TOTAL_LABEL, TicketPOSGUI.LAYOUT_HEIGHT_13, SpringLayout.NORTH, confirmationPageMainPanel);
         mainLayout.putConstraint(SpringLayout.WEST,  confirmationTotalLabel, TicketPOSGUI.LAYOUT_PADDING_10, SpringLayout.WEST, confirmationPageMainPanel);
-        mainLayout.putConstraint(SpringLayout.NORTH, confirmationTotalLabel, TicketPOSGUI.LAYOUT_HEIGHT_13, SpringLayout.NORTH, confirmationPageMainPanel);
-        
-        mainLayout.putConstraint(SpringLayout.WEST,  TicketPOSGUI.CONFIRMATION_TICKET_TOSTRING_LABEL,      TicketPOSGUI.LAYOUT_PADDING_12, SpringLayout.WEST,  confirmationPageMainPanel);
-        mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.CONFIRMATION_TICKET_TOSTRING_LABEL,      TicketPOSGUI.LAYOUT_HEIGHT_4,  SpringLayout.NORTH, confirmationPageMainPanel);
-        mainLayout.putConstraint(SpringLayout.WEST,  TicketPOSGUI.CONFIRMATION_RESERVATION_TOSTRING_LABEL, TicketPOSGUI.LAYOUT_PADDING_12, SpringLayout.WEST,  confirmationPageMainPanel);
-        mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.CONFIRMATION_RESERVATION_TOSTRING_LABEL, TicketPOSGUI.LAYOUT_HEIGHT_12,   SpringLayout.NORTH, confirmationPageMainPanel);
-        
+        mainLayout.putConstraint(SpringLayout.NORTH, confirmationTotalLabel, TicketPOSGUI.LAYOUT_HEIGHT_13, SpringLayout.NORTH, confirmationPageMainPanel);       
         
         // Add elements to Login Panel
         confirmationPageMainPanel.add(TicketPOSGUI.CONFIRMATION_TITLE_LABEL);
@@ -721,9 +781,6 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
         confirmationPageMainPanel.add(TicketPOSGUI.CONFIRMATION_THEATER_LABEL);
         confirmationPageMainPanel.add(TicketPOSGUI.CONFIRMATION_NUMBER_TICKETS_LABEL);
         confirmationPageMainPanel.add(TicketPOSGUI.CONFIRMATION_TOTAL_LABEL);
-        
-        confirmationPageMainPanel.add(TicketPOSGUI.CONFIRMATION_RESERVATION_TOSTRING_LABEL);
-        confirmationPageMainPanel.add(TicketPOSGUI.CONFIRMATION_TICKET_TOSTRING_LABEL);
         
         confirmationPageMainPanel.add(confirmationNumberLabel);
         confirmationPageMainPanel.add(confirmationNameLabel);
@@ -801,7 +858,24 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
         mainLayout.putConstraint(SpringLayout.WEST,  adminMainPanel, 0, SpringLayout.WEST, mainWindowPanel);
         mainLayout.putConstraint(SpringLayout.EAST,  adminMainPanel, 0, SpringLayout.EAST, mainWindowPanel);
         mainLayout.putConstraint(SpringLayout.NORTH, adminMainPanel, 0, SpringLayout.NORTH, mainWindowPanel);
-        mainLayout.putConstraint(SpringLayout.SOUTH, adminMainPanel, 0, SpringLayout.SOUTH, mainWindowPanel);        
+        mainLayout.putConstraint(SpringLayout.SOUTH, adminMainPanel, 0, SpringLayout.SOUTH, mainWindowPanel);   
+        
+        mainLayout.putConstraint(SpringLayout.WEST,  TicketPOSGUI.ADMIN_SEARCH_RESERVATION_LABEL, TicketPOSGUI.LAYOUT_PADDING_1, SpringLayout.WEST, adminMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.ADMIN_SEARCH_RESERVATION_LABEL, TicketPOSGUI.LAYOUT_HEIGHT_1, SpringLayout.NORTH, adminMainPanel);
+        mainLayout.putConstraint(SpringLayout.WEST,  adminSearchReservationTextField, TicketPOSGUI.LAYOUT_PADDING_5, SpringLayout.WEST, adminMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, adminSearchReservationTextField, TicketPOSGUI.LAYOUT_HEIGHT_1, SpringLayout.NORTH, adminMainPanel);
+        mainLayout.putConstraint(SpringLayout.WEST,  actionAdminSearchReservationButton, TicketPOSGUI.LAYOUT_PADDING_8, SpringLayout.WEST, adminMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, actionAdminSearchReservationButton, TicketPOSGUI.LAYOUT_HEIGHT_1, SpringLayout.NORTH, adminMainPanel);
+        
+        mainLayout.putConstraint(SpringLayout.WEST,  scrollPanelTextArea, TicketPOSGUI.LAYOUT_PADDING_1, SpringLayout.WEST, adminMainPanel);
+        mainLayout.putConstraint(SpringLayout.EAST,  scrollPanelTextArea, -TicketPOSGUI.LAYOUT_PADDING_1, SpringLayout.EAST, adminMainPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, scrollPanelTextArea, TicketPOSGUI.LAYOUT_HEIGHT_2, SpringLayout.NORTH, adminMainPanel);
+        mainLayout.putConstraint(SpringLayout.SOUTH, scrollPanelTextArea, -TicketPOSGUI.LAYOUT_HEIGHT_1, SpringLayout.SOUTH, adminMainPanel);
+        
+        adminMainPanel.add(TicketPOSGUI.ADMIN_SEARCH_RESERVATION_LABEL);
+        adminMainPanel.add(adminSearchReservationTextField);
+        adminMainPanel.add(actionAdminSearchReservationButton);
+        adminMainPanel.add(scrollPanelTextArea);
         
 		mainWindowPanel.add(adminMainPanel);
         // End Admin Panel (screen)
@@ -809,17 +883,102 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
         // add main panel to the window
         add(mainWindowPanel);
         
-        orderTicketsTimeSelectorBox.addActionListener (new ActionListener () {
-            public void actionPerformed(ActionEvent e) {
-            	updateRemaningSeats();
-            }
-        });
+        // Start Admin Reservations Panel (screen)
+        // Set Admin Reservations Panel Position Inside Main Window Panel
+		adminReservationsPanel = new JPanel ();
+		adminReservationsPanel.setBorder( new TitledBorder ( new EtchedBorder (), "Reservations" ) );
+		adminReservationsPanel.setLayout(mainLayout);
         
-        orderTicketsDateSelectorBox.addActionListener (new ActionListener () {
-            public void actionPerformed(ActionEvent e) {
-            	updateRemaningSeats();
-            }
-        });
+        mainLayout.putConstraint(SpringLayout.WEST,  adminReservationsPanel, 0, SpringLayout.WEST, mainWindowPanel);
+        mainLayout.putConstraint(SpringLayout.EAST,  adminReservationsPanel, 0, SpringLayout.EAST, mainWindowPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, adminReservationsPanel, 0, SpringLayout.NORTH, mainWindowPanel);
+        mainLayout.putConstraint(SpringLayout.SOUTH, adminReservationsPanel, 0, SpringLayout.SOUTH, mainWindowPanel);   
+        
+        
+        
+		mainWindowPanel.add(adminReservationsPanel);
+        // End Admin Panel (screen)
+		
+		// Start Admin Reservations Panel (screen)
+        // Set Admin Reservations Panel Position Inside Main Window Panel
+		adminSchedulePanel = new JPanel ();
+		adminSchedulePanel.setBorder( new TitledBorder ( new EtchedBorder (), "Movie Schedule" ) );
+		adminSchedulePanel.setLayout(mainLayout);
+        
+        mainLayout.putConstraint(SpringLayout.WEST,  adminSchedulePanel, 0, SpringLayout.WEST, mainWindowPanel);
+        mainLayout.putConstraint(SpringLayout.EAST,  adminSchedulePanel, 0, SpringLayout.EAST, mainWindowPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, adminSchedulePanel, 0, SpringLayout.NORTH, mainWindowPanel);
+        mainLayout.putConstraint(SpringLayout.SOUTH, adminSchedulePanel, 0, SpringLayout.SOUTH, mainWindowPanel);   
+        
+
+        
+		mainWindowPanel.add(adminSchedulePanel);
+        // End Admin Panel (screen)
+		
+		// Start Admin Settings Panel (screen)
+		adminSettingsPanel = new JPanel ();
+		adminSettingsPanel.setBorder( new TitledBorder ( new EtchedBorder (), "Settings" ) );
+		adminSettingsPanel.setLayout(mainLayout);
+        
+        mainLayout.putConstraint(SpringLayout.WEST,  adminSettingsPanel, 0, SpringLayout.WEST, mainWindowPanel);
+        mainLayout.putConstraint(SpringLayout.EAST,  adminSettingsPanel, 0, SpringLayout.EAST, mainWindowPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, adminSettingsPanel, 0, SpringLayout.NORTH, mainWindowPanel);
+        mainLayout.putConstraint(SpringLayout.SOUTH, adminSettingsPanel, 0, SpringLayout.SOUTH, mainWindowPanel);   
+
+        
+        mainLayout.putConstraint(SpringLayout.WEST,  TicketPOSGUI.ADMIN_SETTINGS_LABEL, TicketPOSGUI.LAYOUT_PADDING_6, SpringLayout.WEST, adminSettingsPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.ADMIN_SETTINGS_LABEL, TicketPOSGUI.LAYOUT_HEIGHT_2, SpringLayout.NORTH, adminSettingsPanel);
+
+        mainLayout.putConstraint(SpringLayout.WEST,  TicketPOSGUI.ADMIN_SET_PRICE_LABEL, TicketPOSGUI.LAYOUT_PADDING_3, SpringLayout.WEST, adminSettingsPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.ADMIN_SET_PRICE_LABEL, TicketPOSGUI.LAYOUT_HEIGHT_4, SpringLayout.NORTH, adminSettingsPanel);
+        mainLayout.putConstraint(SpringLayout.WEST,  adminSetPriceTextField, TicketPOSGUI.LAYOUT_PADDING_8, SpringLayout.WEST, adminSettingsPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, adminSetPriceTextField, TicketPOSGUI.LAYOUT_HEIGHT_4, SpringLayout.NORTH, adminSettingsPanel);
+        mainLayout.putConstraint(SpringLayout.WEST,  actionAdminUpdatePriceButton, TicketPOSGUI.LAYOUT_PADDING_11, SpringLayout.WEST, adminSettingsPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, actionAdminUpdatePriceButton, TicketPOSGUI.LAYOUT_HEIGHT_4, SpringLayout.NORTH, adminSettingsPanel);
+        
+        mainLayout.putConstraint(SpringLayout.WEST,  TicketPOSGUI.ADMIN_SET_EMAIL_SENDING_LABEL, TicketPOSGUI.LAYOUT_PADDING_3, SpringLayout.WEST, adminSettingsPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.ADMIN_SET_EMAIL_SENDING_LABEL, TicketPOSGUI.LAYOUT_HEIGHT_5, SpringLayout.NORTH, adminSettingsPanel);
+        mainLayout.putConstraint(SpringLayout.WEST,  adminSetEmailSendTextField, TicketPOSGUI.LAYOUT_PADDING_8, SpringLayout.WEST, adminSettingsPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, adminSetEmailSendTextField, TicketPOSGUI.LAYOUT_HEIGHT_5, SpringLayout.NORTH, adminSettingsPanel);
+        mainLayout.putConstraint(SpringLayout.WEST,  actionAdminUpdateEmailSettingsButton, TicketPOSGUI.LAYOUT_PADDING_11, SpringLayout.WEST, adminSettingsPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, actionAdminUpdateEmailSettingsButton, TicketPOSGUI.LAYOUT_HEIGHT_5, SpringLayout.NORTH, adminSettingsPanel);
+        
+        mainLayout.putConstraint(SpringLayout.WEST,  TicketPOSGUI.ADMIN_SET_LOGIN_LABEL, TicketPOSGUI.LAYOUT_PADDING_3, SpringLayout.WEST, adminSettingsPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.ADMIN_SET_LOGIN_LABEL, TicketPOSGUI.LAYOUT_HEIGHT_6, SpringLayout.NORTH, adminSettingsPanel);
+        mainLayout.putConstraint(SpringLayout.WEST,  adminSetLoginTextField, TicketPOSGUI.LAYOUT_PADDING_8, SpringLayout.WEST, adminSettingsPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, adminSetLoginTextField, TicketPOSGUI.LAYOUT_HEIGHT_6, SpringLayout.NORTH, adminSettingsPanel);
+        mainLayout.putConstraint(SpringLayout.WEST,  actionAdminUpdateLoginButton, TicketPOSGUI.LAYOUT_PADDING_11, SpringLayout.WEST, adminSettingsPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, actionAdminUpdateLoginButton, TicketPOSGUI.LAYOUT_HEIGHT_6, SpringLayout.NORTH, adminSettingsPanel);
+        
+        mainLayout.putConstraint(SpringLayout.WEST,  TicketPOSGUI.ADMIN_SET_PASSWORD_LABEL, TicketPOSGUI.LAYOUT_PADDING_3, SpringLayout.WEST, adminSettingsPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.ADMIN_SET_PASSWORD_LABEL, TicketPOSGUI.LAYOUT_HEIGHT_7, SpringLayout.NORTH, adminSettingsPanel);
+        mainLayout.putConstraint(SpringLayout.WEST,  adminSetPasswordTextField, TicketPOSGUI.LAYOUT_PADDING_8, SpringLayout.WEST, adminSettingsPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, adminSetPasswordTextField, TicketPOSGUI.LAYOUT_HEIGHT_7, SpringLayout.NORTH, adminSettingsPanel);
+        mainLayout.putConstraint(SpringLayout.WEST,  actionAdminUpdatePasswordButton, TicketPOSGUI.LAYOUT_PADDING_11, SpringLayout.WEST, adminSettingsPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, actionAdminUpdatePasswordButton, TicketPOSGUI.LAYOUT_HEIGHT_7, SpringLayout.NORTH, adminSettingsPanel);
+
+        
+        adminSettingsPanel.add(TicketPOSGUI.ADMIN_SET_PRICE_LABEL);
+        adminSettingsPanel.add(TicketPOSGUI.ADMIN_SET_EMAIL_SENDING_LABEL);
+        adminSettingsPanel.add(TicketPOSGUI.ADMIN_SET_LOGIN_LABEL);
+        adminSettingsPanel.add(TicketPOSGUI.ADMIN_SET_PASSWORD_LABEL);
+        
+        adminSettingsPanel.add(actionAdminUpdatePriceButton);
+        adminSettingsPanel.add(actionAdminUpdateEmailSettingsButton);
+        adminSettingsPanel.add(actionAdminUpdateLoginButton);
+        adminSettingsPanel.add(actionAdminUpdatePasswordButton);
+        
+        adminSettingsPanel.add(adminSetPriceTextField);
+        adminSettingsPanel.add(adminSetEmailSendTextField);
+        adminSettingsPanel.add(adminSetLoginTextField);
+        adminSettingsPanel.add(adminSetPasswordTextField);
+        
+		mainWindowPanel.add(adminSettingsPanel);
+        // End Admin Panel (screen)
+		
+
+        // add main panel to the window
+        add(mainWindowPanel);
         
         // hide all panels and show customer panel by default
         hideAllPanels();
@@ -842,13 +1001,86 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
 			String username = loginUsernameTextField.getText();
 			String password = loginPasswordTextField.getText();
 			
-			if(username.equals(TicketPOSGUI.SECRET_USERNAME) && password.equals(TicketPOSGUI.SECRET_PASSWORD)) {
+			if(username.equals(SECRET_USERNAME) && password.equals(SECRET_PASSWORD)) {
 				logAdminIn();
 				showPanel(adminMainPanel);
 			} else {
 				alert("Wrong username or password!", "Error");
 			}
-        	        	
+			
+        } else if(actionCommand.equals(TicketPOSGUI.BUTTON_CAPTION_ADMIN_FIND_RESERVATION)) {
+        	
+        	String      reservationNumber = adminSearchReservationTextField.getText();
+        	
+        	if (reservationNumber.isEmpty()) {
+				alert("Please Enter Reservation Number", "Error");
+			} else {
+				
+				try {
+					Reservation reservation       = reservations.get(reservationNumber);
+		        	String      reservationInfo   = reservation.toString();
+		        	adminconsoleTextArea.setText(reservationInfo);
+				} catch (NullPointerException e2) {
+					alert("Could not find reservation", "Error");
+				}
+			}
+        	
+        } else if(actionCommand.equals(TicketPOSGUI.BUTTON_CAPTION_ADMIN_SET_PRICE)) {
+        	
+        	String priceString = adminSetPriceTextField.getText();
+        	
+        	if (priceString.isEmpty()) {
+        		alert("Please Enter Correct Price", "Error");
+        	} else {
+        		
+        		try {
+        			double newPrice = Double.parseDouble(priceString);
+        			movieTicketPrice = newPrice;
+        			alert("Movie ticket price was updated", "Info");
+        			
+        		} catch (java.lang.NumberFormatException e2) {
+        			alert("Please Enter Correct Price", "Error");
+        		}
+        	}
+        	
+        } else if(actionCommand.equals(TicketPOSGUI.BUTTON_CAPTION_ADMIN_SET_EMAIL_SENDING)) {
+        	
+        	String emailSettings = adminSetEmailSendTextField.getText();
+        	
+        	if (emailSettings.isEmpty()) {
+        		alert("Please Enter Settings (0 or 1)", "Error");
+        	} else {
+        		
+        		if (emailSettings.equals("0") || emailSettings.equals("1")) {
+        			isEmailEnabled = emailSettings.equals("1") ? true : false;
+        			alert("Email Settings was updated", "Info");
+        		} else {
+        			alert("Please Enter Settings (0 or 1)", "Error");
+        		}
+        	}
+        	
+        } else if(actionCommand.equals(TicketPOSGUI.BUTTON_CAPTION_ADMIN_SET_LOGIN)) {
+        	
+        	String username = adminSetLoginTextField.getText();
+        	
+        	if (username.isEmpty()) {
+        		alert("Please Enter Username", "Error");
+        	} else {
+        		SECRET_USERNAME = username;
+        		alert("Username was updated", "Info");
+        	}
+        	
+        } else if(actionCommand.equals(TicketPOSGUI.BUTTON_CAPTION_ADMIN_SET_PASSWORD)) {
+        	
+        	String password = adminSetPasswordTextField.getText();
+        	
+        	if (password.isEmpty()) {
+        		alert("Please Enter Password", "Error");
+        	} else {
+        		SECRET_PASSWORD = password;
+        		alert("Password was updated", "Info");
+        	}
+        	
         } else if(actionCommand.equals(TicketPOSGUI.BUTTON_CAPTION_BACK)) {
 			
         	// Reset selected movie
@@ -1013,7 +1245,7 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
 			String username = loginUsernameTextField.getText();
 			String password = loginPasswordTextField.getText();
 			
-			if(username.equals(TicketPOSGUI.SECRET_USERNAME) && password.equals(TicketPOSGUI.SECRET_PASSWORD)) {
+			if(username.equals(SECRET_USERNAME) && password.equals(SECRET_PASSWORD)) {
 				logAdminIn();
 				showPanel(adminMainPanel);
 			} else {
@@ -1028,247 +1260,106 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
 			
     		// From Search Form, Find Movies using user input
 			
-			// Get search form inputs
-			String searchString = searchMovieTextField.getText();
-			String searchGenre  = String.valueOf(genreSelectorBox.getSelectedItem());
-			String searchTime   = String.valueOf(timeSelectorBox.getSelectedItem());
-			String sortBy       = String.valueOf(sortMoviesSelectorBox.getSelectedItem());
+			searchMovies();
 			
-			searchString = searchString.equalsIgnoreCase("")      ? "" : searchString;
-			searchGenre  = searchGenre.equalsIgnoreCase("Select") ? "" : searchGenre;
-			searchTime   = searchTime.equalsIgnoreCase("Select")  ? "" : searchTime;
-			
-			Map<String, MovieMenuItem> filteredCollection;
-			
-			if(searchGenre.isEmpty() && searchTime.isEmpty()) {				
-				filteredCollection = movieMenu.search(searchString);
-			} else if (searchGenre.isEmpty()) {
-				MovieTime time = new MovieTime(searchTime);
-				System.out.println(searchTime);
-				System.out.println(time);
-				filteredCollection = movieMenu.search(searchString, time);
-				System.out.println(filteredCollection);
-			} else if (searchTime.isEmpty()) {
-				Genre genre = new Genre(searchGenre);
-				filteredCollection = movieMenu.search(searchString, genre);
-			} else {
-				Genre genre = new Genre(searchGenre);
-				MovieTime time = new MovieTime(searchTime);
-				filteredCollection = movieMenu.search(searchString, genre, time);
-			}
-			
-			if(sortBy.equalsIgnoreCase("Title")) {        		
-        		
-				// Create a list from elements of HashMap 
-		        List<Map.Entry<String, MovieMenuItem> > list = 
-		               new LinkedList<Map.Entry<String, MovieMenuItem> >(filteredCollection.entrySet()); 
-		  
-		        // Sort the list 
-		        Collections.sort(list, new Comparator<Map.Entry<String, MovieMenuItem> >() { 
-		            public int compare(Map.Entry<String, MovieMenuItem> o1,  
-		                               Map.Entry<String, MovieMenuItem> o2) 
-		            { 
-		                return (o1.getValue()).compareTo(o2.getValue()); 
-		            } 
-		        }); 
-		          
-		        // put data from sorted list to hashmap  
-		        Map<String, MovieMenuItem> tempMap = new LinkedHashMap<String, MovieMenuItem>(); 
-		        for (Map.Entry<String, MovieMenuItem> aa : list) { 
-		            tempMap.put(aa.getKey(), aa.getValue()); 
-		        } 
-		        
-		        if(tempMap.size() > 0) {  
-		        	updateMovieMenu(tempMap);
-		        }	
-		        
-	        } else if(sortBy.equalsIgnoreCase("Title DESC")) {        		
-	        		
-				// Create a list from elements of HashMap 
-		        List<Map.Entry<String, MovieMenuItem> > list = 
-		               new LinkedList<Map.Entry<String, MovieMenuItem> >(filteredCollection.entrySet()); 
-		  
-		        // Sort the list 
-		        Collections.sort(list, new Comparator<Map.Entry<String, MovieMenuItem> >() { 
-		            public int compare(Map.Entry<String, MovieMenuItem> o1,  
-		                               Map.Entry<String, MovieMenuItem> o2) 
-		            { 
-		                return -(o1.getValue()).compareTo(o2.getValue()); 
-		            } 
-		        }); 
-		          
-		        // put data from sorted list to hashmap  
-		        Map<String, MovieMenuItem> tempMap = new LinkedHashMap<String, MovieMenuItem>(); 
-		        for (Map.Entry<String, MovieMenuItem> aa : list) { 
-		            tempMap.put(aa.getKey(), aa.getValue()); 
-		        } 
-		        
-		        if(tempMap.size() > 0) {  
-		        	updateMovieMenu(tempMap);
-		        }
-			
-			} else if(sortBy.equalsIgnoreCase("Duration")) {
-				
-				
-				// Create a list from elements of HashMap 
-		        List<Map.Entry<String, MovieMenuItem> > list = 
-		               new LinkedList<Map.Entry<String, MovieMenuItem> >(filteredCollection.entrySet()); 
-		  
-		        // Sort the list 
-		        Collections.sort(list, new Comparator<Map.Entry<String, MovieMenuItem> >() { 
-		            public int compare(Map.Entry<String, MovieMenuItem> o1,  
-		                               Map.Entry<String, MovieMenuItem> o2) 
-		            { 
-		            	return (o1.getValue().getMovie().getDuration() - o2.getValue().getMovie().getDuration()); 
-		            } 
-		        }); 
-		          
-		        // put data from sorted list to hashmap  
-		        Map<String, MovieMenuItem> tempMap = new LinkedHashMap<String, MovieMenuItem>(); 
-		        for (Map.Entry<String, MovieMenuItem> aa : list) { 
-		            tempMap.put(aa.getKey(), aa.getValue()); 
-		        } 
-		        
-		        if(tempMap.size() > 0) {  
-		        	updateMovieMenu(tempMap);
-		        }
-		        
-			} else if(sortBy.equalsIgnoreCase("Duration DESC")) {
-				
-				
-				// Create a list from elements of HashMap 
-		        List<Map.Entry<String, MovieMenuItem> > list = 
-		               new LinkedList<Map.Entry<String, MovieMenuItem> >(filteredCollection.entrySet()); 
-		  
-		        // Sort the list 
-		        Collections.sort(list, new Comparator<Map.Entry<String, MovieMenuItem> >() { 
-		            public int compare(Map.Entry<String, MovieMenuItem> o1,  
-		                               Map.Entry<String, MovieMenuItem> o2) 
-		            { 
-		            	return -(o1.getValue().getMovie().getDuration() - o2.getValue().getMovie().getDuration()); 
-		            } 
-		        }); 
-		        
-		        // put data from sorted list to hashmap  
-		        Map<String, MovieMenuItem> tempMap = new LinkedHashMap<String, MovieMenuItem>(); 
-		        for (Map.Entry<String, MovieMenuItem> aa : list) { 
-		            tempMap.put(aa.getKey(), aa.getValue()); 
-		        } 
-		        
-		        if(tempMap.size() > 0) {  
-		        	updateMovieMenu(tempMap);
-		        }
-				
-        	} else {        
-        		if(filteredCollection.size() > 0) {        			
-        			updateMovieMenu(filteredCollection);	
-        		}
-        	}
-			
-			
-			if (filteredCollection.size() == 0) {
-				String message = "Oops. Couldn't find movies. Please try something else." + "\n";
-				message += "Search String: '" + searchString + "'" + "\n";
-				message += "Selected Genre: " + searchGenre  + "\n";
-				message += "Selected Time: "  + searchTime   + "\n";
-				
-				alert(message, "Info");
-			}
-			
-		} else if(actionCommand.equals(TicketPOSGUI.MENU_ADMIN_MOVIES_VIEW)) {
+		} else if(actionCommand.equals(TicketPOSGUI.MENU_ADMIN_FIND_RESERVATION_VIEW)) {
 			
 			// From Menu, Show Admin Panel (Screen) where admin can edit movies description
 			// if user is not logged in show login screen
 			if(! isAdmin()) {
 				showPanel(loginMainPanel);
 			} else {				
-				alert("Movies Edit Screen", "Info");
+				showPanel(adminMainPanel);
 			}
 			
-		} else if(actionCommand.equals(TicketPOSGUI.MENU_ADMIN_THEATERS_VIEW)) {
+		} else if(actionCommand.equals(TicketPOSGUI.MENU_ADMIN_RESERVATIONS_VIEW)) {
 			
 			// From Menu, Show Admin Panel (Screen) where admin can edit theater description
 			// if user is not logged in show login screen
 			if(! isAdmin()) {
 				showPanel(loginMainPanel);
 			} else {				
-				alert("Theater Edit Screen", "Info");
+				
+				// Column Names 
+		        String[] reservationsTableCollumn = { "Reservation Number", "Movie", "Date", "Time", "Theater", "First Name", "Last Name", "Email", "Total", "Reservation Time"}; 
+				
+		        // Data to be displayed in the JTable 
+				String[][] reservationsTableData = new String[reservations.size()][10]; 
+				
+				
+				Iterator<Map.Entry<String, Reservation>> entries = reservations.entrySet().iterator();
+				int i = 0;
+				while (entries.hasNext()) {
+				    Map.Entry<String, Reservation> entry = entries.next();
+				    
+				    reservationsTableData[i][0] = String.valueOf(entry.getValue().getReservationNumber());
+					reservationsTableData[i][1] = String.valueOf(entry.getValue().getTicketInfo().getMovie().getTitle());
+					reservationsTableData[i][2] = String.valueOf(entry.getValue().getTicketInfo().getMovieDate());
+					reservationsTableData[i][3] = String.valueOf(entry.getValue().getTicketInfo().getMovieTime());
+					reservationsTableData[i][4] = String.valueOf(entry.getValue().getTicketInfo().getTheater().getName());
+					reservationsTableData[i][5] = String.valueOf(entry.getValue().getTicketInfo().getPerson().getFirstName());
+					reservationsTableData[i][6] = String.valueOf(entry.getValue().getTicketInfo().getPerson().getLastName());
+					reservationsTableData[i][7] = String.valueOf(entry.getValue().getTicketInfo().getPerson().getEmail());
+					reservationsTableData[i][8] = String.valueOf(entry.getValue().getTicketInfo().getPay().getTotal());
+					reservationsTableData[i][9] = String.valueOf(entry.getValue().getReserveDate());
+		            
+					i++;
+				}
+		        
+		  
+		        // Initializing the JTable 
+		        JTable table = new JTable(reservationsTableData, reservationsTableCollumn); 
+		        table.setRowHeight(40);
+		        table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+				table.getColumnModel().getColumn(0).setPreferredWidth(120);
+				table.getColumnModel().getColumn(1).setPreferredWidth(120);
+				table.getColumnModel().getColumn(2).setPreferredWidth(60);
+				table.getColumnModel().getColumn(3).setPreferredWidth(60);
+				table.getColumnModel().getColumn(4).setPreferredWidth(60);
+				table.getColumnModel().getColumn(5).setPreferredWidth(120);
+				table.getColumnModel().getColumn(6).setPreferredWidth(120);
+				table.getColumnModel().getColumn(7).setPreferredWidth(120);
+				table.getColumnModel().getColumn(8).setPreferredWidth(60);
+				table.getColumnModel().getColumn(9).setPreferredWidth(120);
+		        
+		        JScrollPane scrollPane = new JScrollPane(table);
+		        scrollPane.setPreferredSize(new Dimension(1200, 500));
+		        scrollPane.setSize(new Dimension(1200, 500));
+				
+		        adminReservationsPanel.add(scrollPane);
+				
+				showPanel(adminReservationsPanel);
 			}
 			
-		} else if(actionCommand.equals(TicketPOSGUI.MENU_ADMIN_TIMES_VIEW)) {
+		} else if(actionCommand.equals(TicketPOSGUI.MENU_ADMIN_SCHEDULE_VIEW)) {
 			
 			// From Menu, Show Admin Panel (Screen) where admin can edit times description
 			// if user is not logged in show login screen
 			if(! isAdmin()) {
 				showPanel(loginMainPanel);
 			} else {				
-				alert("Times Edit Screen", "Info");
+				showPanel(adminSchedulePanel);
 			}
 			
-		} else if(actionCommand.equals(TicketPOSGUI.MENU_ADMIN_GENRES_VIEW)) {
+		} else if(actionCommand.equals(TicketPOSGUI.MENU_ADMIN_SETTINGS_VIEW)) {
 			
 			// From Menu, Show Admin Panel (Screen) where admin can edit genres
 			// if user is not logged in show login screen
 			if(! isAdmin()) {
 				showPanel(loginMainPanel);
 			} else {				
-				alert("Genres Edit Screen", "Info");
+				
+				adminSetPriceTextField.setText(String.valueOf(movieTicketPrice));
+				adminSetEmailSendTextField.setText(String.valueOf(isEmailEnabled));
+				adminSetLoginTextField.setText(SECRET_USERNAME);
+				showPanel(adminSettingsPanel);
 			}
-			
-		} else if(actionCommand.equals(TicketPOSGUI.MENU_ADMIN_SCHEDULE_VIEW)) {
-			
-			// From Menu, Show Admin Panel (Screen) where admin can edit movie schedule
-			// if user is not logged in show login screen
-			if(! isAdmin()) {
-				showPanel(loginMainPanel);
-			} else {				
-				alert("Movie Schedule Edit Screen", "Info");
-			}
-			
-		} else if(actionCommand.equals(TicketPOSGUI.MENU_ADMIN_TICKETS_VIEW)) {
-			
-			// From Menu, Show Admin Panel (Screen) where admin can see all tickets sold
-			// if user is not logged in show login screen
-			if(! isAdmin()) {
-				showPanel(loginMainPanel);
-			} else {				
-				alert("Tickets View Screen", "Info");
-			}
-			
-		} else if(actionCommand.equals(TicketPOSGUI.MENU_ADMIN_RESERVATIONS_VIEW)) {
-			
-			// From Menu, Show Admin Panel (Screen) where admin can see all tickets with totals
-			// if user is not logged in show login screen
-			if(! isAdmin()) {
-				showPanel(loginMainPanel);
-			} else {				
-				alert("Reservations View Screen", "Info");
-			}
-			
-		} else if(actionCommand.equals(TicketPOSGUI.MENU_ADMIN_SALES_VIEW)) {
-			
-			// From Menu, Show Admin Panel (Screen) where admin can see sales stats
-			// if user is not logged in show login screen
-			if(! isAdmin()) {
-				showPanel(loginMainPanel);
-			} else {				
-				alert("Sales View Screen", "Info");
-			}
+		
 			
 		} else if(actionCommand.equals(TicketPOSGUI.MENU_CUSTOMER_VIEW)) {
 			
     		// From Menu, Show Customer (Default) Panel (Screen)
 			showPanel(customerViewPanel);
-			
-		} else if(actionCommand.equals(TicketPOSGUI.MENU_ORDER_PAGE_VIEW)) {
-			
-    		// From Menu, Show Customer (Default) Panel (Screen)
-			showPanel(orderPageMainPanel);
-			
-		} else if(actionCommand.equals(TicketPOSGUI.MENU_CONFIRMATION_PAGE_VIEW)) {
-			
-			// From Menu, Show Customer (Default) Panel (Screen)
-			showPanel(confirmationPageMainPanel);
 			
 		} else if(actionCommand.equals(TicketPOSGUI.MENU_LOGIN_VIEW)) {
 			
@@ -1574,7 +1665,7 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
     
     
     /**
-     * Helper function to hide all panels
+     * Check if user is Admin
      */
     public boolean isAdmin() {
 		return isAdmin;
@@ -1614,10 +1705,14 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
     public void hideAllPanels() {
 		loginMainPanel.setVisible(false);
 		customerViewPanel.setVisible(false);
-		adminMainPanel.setVisible(false);
 		loginMainPanel.setVisible(false);
 		orderPageMainPanel.setVisible(false);
 		confirmationPageMainPanel.setVisible(false);
+		
+		adminMainPanel.setVisible(false);
+		adminReservationsPanel.setVisible(false);
+		adminSchedulePanel.setVisible(false);
+		adminSettingsPanel.setVisible(false);
 	}
     
     /*
@@ -1722,6 +1817,156 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
     }
     
     
+    private void searchMovies() {
+    	// Get search form inputs
+		String searchString = searchMovieTextField.getText();
+		String searchGenre  = String.valueOf(genreSelectorBox.getSelectedItem());
+		String searchTime   = String.valueOf(timeSelectorBox.getSelectedItem());
+		String sortBy       = String.valueOf(sortMoviesSelectorBox.getSelectedItem());
+		
+		searchString = searchString.equalsIgnoreCase("")      ? "" : searchString;
+		searchGenre  = searchGenre.equalsIgnoreCase("Select") ? "" : searchGenre;
+		searchTime   = searchTime.equalsIgnoreCase("Select")  ? "" : searchTime;
+		
+		Map<String, MovieMenuItem> filteredCollection;
+		
+		if(searchGenre.isEmpty() && searchTime.isEmpty()) {				
+			filteredCollection = movieMenu.search(searchString);
+		} else if (searchGenre.isEmpty()) {
+			MovieTime time = new MovieTime(searchTime);
+			System.out.println(searchTime);
+			System.out.println(time);
+			filteredCollection = movieMenu.search(searchString, time);
+			System.out.println(filteredCollection);
+		} else if (searchTime.isEmpty()) {
+			Genre genre = new Genre(searchGenre);
+			filteredCollection = movieMenu.search(searchString, genre);
+		} else {
+			Genre genre = new Genre(searchGenre);
+			MovieTime time = new MovieTime(searchTime);
+			filteredCollection = movieMenu.search(searchString, genre, time);
+		}
+		
+		if(sortBy.equalsIgnoreCase("Title")) {        		
+    		
+			// Create a list from elements of HashMap 
+	        List<Map.Entry<String, MovieMenuItem> > list = 
+	               new LinkedList<Map.Entry<String, MovieMenuItem> >(filteredCollection.entrySet()); 
+	  
+	        // Sort the list 
+	        Collections.sort(list, new Comparator<Map.Entry<String, MovieMenuItem> >() { 
+	            public int compare(Map.Entry<String, MovieMenuItem> o1,  
+	                               Map.Entry<String, MovieMenuItem> o2) 
+	            { 
+	                return (o1.getValue()).compareTo(o2.getValue()); 
+	            } 
+	        }); 
+	          
+	        // put data from sorted list to hashmap  
+	        Map<String, MovieMenuItem> tempMap = new LinkedHashMap<String, MovieMenuItem>(); 
+	        for (Map.Entry<String, MovieMenuItem> aa : list) { 
+	            tempMap.put(aa.getKey(), aa.getValue()); 
+	        } 
+	        
+	        if(tempMap.size() > 0) {  
+	        	updateMovieMenu(tempMap);
+	        }	
+	        
+        } else if(sortBy.equalsIgnoreCase("Title DESC")) {        		
+        		
+			// Create a list from elements of HashMap 
+	        List<Map.Entry<String, MovieMenuItem> > list = 
+	               new LinkedList<Map.Entry<String, MovieMenuItem> >(filteredCollection.entrySet()); 
+	  
+	        // Sort the list 
+	        Collections.sort(list, new Comparator<Map.Entry<String, MovieMenuItem> >() { 
+	            public int compare(Map.Entry<String, MovieMenuItem> o1,  
+	                               Map.Entry<String, MovieMenuItem> o2) 
+	            { 
+	                return -(o1.getValue()).compareTo(o2.getValue()); 
+	            } 
+	        }); 
+	          
+	        // put data from sorted list to hashmap  
+	        Map<String, MovieMenuItem> tempMap = new LinkedHashMap<String, MovieMenuItem>(); 
+	        for (Map.Entry<String, MovieMenuItem> aa : list) { 
+	            tempMap.put(aa.getKey(), aa.getValue()); 
+	        } 
+	        
+	        if(tempMap.size() > 0) {  
+	        	updateMovieMenu(tempMap);
+	        }
+		
+		} else if(sortBy.equalsIgnoreCase("Duration")) {
+			
+			
+			// Create a list from elements of HashMap 
+	        List<Map.Entry<String, MovieMenuItem> > list = 
+	               new LinkedList<Map.Entry<String, MovieMenuItem> >(filteredCollection.entrySet()); 
+	  
+	        // Sort the list 
+	        Collections.sort(list, new Comparator<Map.Entry<String, MovieMenuItem> >() { 
+	            public int compare(Map.Entry<String, MovieMenuItem> o1,  
+	                               Map.Entry<String, MovieMenuItem> o2) 
+	            { 
+	            	return (o1.getValue().getMovie().getDuration() - o2.getValue().getMovie().getDuration()); 
+	            } 
+	        }); 
+	          
+	        // put data from sorted list to hashmap  
+	        Map<String, MovieMenuItem> tempMap = new LinkedHashMap<String, MovieMenuItem>(); 
+	        for (Map.Entry<String, MovieMenuItem> aa : list) { 
+	            tempMap.put(aa.getKey(), aa.getValue()); 
+	        } 
+	        
+	        if(tempMap.size() > 0) {  
+	        	updateMovieMenu(tempMap);
+	        }
+	        
+		} else if(sortBy.equalsIgnoreCase("Duration DESC")) {
+			
+			
+			// Create a list from elements of HashMap 
+	        List<Map.Entry<String, MovieMenuItem> > list = 
+	               new LinkedList<Map.Entry<String, MovieMenuItem> >(filteredCollection.entrySet()); 
+	  
+	        // Sort the list 
+	        Collections.sort(list, new Comparator<Map.Entry<String, MovieMenuItem> >() { 
+	            public int compare(Map.Entry<String, MovieMenuItem> o1,  
+	                               Map.Entry<String, MovieMenuItem> o2) 
+	            { 
+	            	return -(o1.getValue().getMovie().getDuration() - o2.getValue().getMovie().getDuration()); 
+	            } 
+	        }); 
+	        
+	        // put data from sorted list to hashmap  
+	        Map<String, MovieMenuItem> tempMap = new LinkedHashMap<String, MovieMenuItem>(); 
+	        for (Map.Entry<String, MovieMenuItem> aa : list) { 
+	            tempMap.put(aa.getKey(), aa.getValue()); 
+	        } 
+	        
+	        if(tempMap.size() > 0) {  
+	        	updateMovieMenu(tempMap);
+	        }
+			
+    	} else {        
+    		if(filteredCollection.size() > 0) {        			
+    			updateMovieMenu(filteredCollection);	
+    		}
+    	}
+		
+		
+		if (filteredCollection.size() == 0) {
+			String message = "Oops. Couldn't find movies. Please try something else." + "\n";
+			message += "Search String: '" + searchString + "'" + "\n";
+			message += "Selected Genre: " + searchGenre  + "\n";
+			message += "Selected Time: "  + searchTime   + "\n";
+			
+			alert(message, "Info");
+		}
+    }
+    
+    
     /**
      * Helper function to create menu for GUI
      */
@@ -1765,39 +2010,21 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
         menuAdmin.setVisible(isAdmin);
         menuBar.add(menuAdmin);
         
-        menuAdminMoviesItem = new JMenuItem(MENU_ADMIN_MOVIES_VIEW);
-        menuAdminMoviesItem.addActionListener(this);
-        menuAdmin.add(menuAdminMoviesItem);
-        
-        menuAdminTheatersItem = new JMenuItem(MENU_ADMIN_THEATERS_VIEW);
-        menuAdminTheatersItem.addActionListener(this);
-        menuAdmin.add(menuAdminTheatersItem);
-        
-        menuAdminGenresItem = new JMenuItem(MENU_ADMIN_GENRES_VIEW);
-        menuAdminGenresItem.addActionListener(this);
-        menuAdmin.add(menuAdminGenresItem);
-        
-        menuAdminTimesItem = new JMenuItem(MENU_ADMIN_TIMES_VIEW);
-        menuAdminTimesItem.addActionListener(this);
-        menuAdmin.add(menuAdminTimesItem);
-        
-        menuAdminScheduleItem = new JMenuItem(MENU_ADMIN_SCHEDULE_VIEW);
-        menuAdminScheduleItem.addActionListener(this);
-        menuAdmin.add(menuAdminScheduleItem);
-        menuAdmin.addSeparator();
-        
-        menuAdminTicketsItem = new JMenuItem(MENU_ADMIN_TICKETS_VIEW);
-        menuAdminTicketsItem.addActionListener(this);
-        menuAdmin.add(menuAdminTicketsItem);
+        menuAdminFindResrvationItem = new JMenuItem(MENU_ADMIN_FIND_RESERVATION_VIEW);
+        menuAdminFindResrvationItem.addActionListener(this);
+        menuAdmin.add(menuAdminFindResrvationItem);
         
         menuAdminReservationsItem = new JMenuItem(MENU_ADMIN_RESERVATIONS_VIEW);
         menuAdminReservationsItem.addActionListener(this);
         menuAdmin.add(menuAdminReservationsItem);
         
-        menuAdminSalesItem = new JMenuItem(MENU_ADMIN_SALES_VIEW);
-        menuAdminSalesItem.addActionListener(this);
-        menuAdmin.add(menuAdminSalesItem);
-        menuAdmin.addSeparator();
+        menuAdminScheduleItem = new JMenuItem(MENU_ADMIN_SCHEDULE_VIEW);
+        menuAdminScheduleItem.addActionListener(this);
+        menuAdmin.add(menuAdminScheduleItem);
+        
+        menuAdminSettingsItem = new JMenuItem(MENU_ADMIN_SETTINGS_VIEW);
+        menuAdminSettingsItem.addActionListener(this);
+        menuAdmin.add(menuAdminSettingsItem);
         
         menuAdminLogOutItem = new JMenuItem(MENU_ADMIN_LOGOUT);
         menuAdminLogOutItem.addActionListener(this);

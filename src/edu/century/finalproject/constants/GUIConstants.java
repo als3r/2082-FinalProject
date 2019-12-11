@@ -11,15 +11,6 @@ public interface GUIConstants {
 	 */
 	public static final String PROGRAM_NAME = "Cinema Theater POS v0.01";
 	
-	/**
-	 * Admin Username
-	 */
-	public static final String SECRET_USERNAME = "admin";
-	
-	/**
-	 * Admin Password
-	 */
-	public static final String SECRET_PASSWORD = "12345";
 	
 	/**
 	 * Version
