@@ -64,6 +64,7 @@ import java.util.stream.Collectors;
  * Due:  December 11, 2019
  * @author David Duong <dduong051@gmail.com>
  * @author Alexandr Sergeyev <ns1418cz@go.minnstate.edu>
+ * @author Yuepeng Yang <yuepeng.yang@my.century.edu>
  */
 public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants, GUILabels, GUIMenu, GUIButtonCaptions, GUIFonts {
 	
