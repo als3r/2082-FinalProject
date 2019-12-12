@@ -76,7 +76,15 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
 	 * Admin privileges
 	 */
 	private boolean isAdmin          = false;
+	
+	/**
+	 * Emails by default disabled, need to enter Sendgrid API in admin settings
+	 */
 	private boolean isEmailEnabled   = false;
+	
+	/**
+	 * To store price for movie tickets
+	 */
 	private double  movieTicketPrice = 5;
 	
 	/**
@@ -88,6 +96,11 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
 	 * Admin Password
 	 */
 	public static String SECRET_PASSWORD = "12345";
+	
+	/**
+	 * Sendgrid API KEY needs to be updated in the settings
+	 */
+    public static String SENDGRID_KEY = "API KEY HERE";
 	
     /**
      * JTextField for Movie Search
@@ -119,6 +132,8 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
      * JTextField For Admins
      */
     private JTextField adminSearchReservationTextField = new JTextField(NUMBER_OF_CHAR_INPUT_MEDIUM);
+    
+    private JTextField adminSetSendGridKeyTextField    = new JTextField(NUMBER_OF_CHAR_INPUT_MEDIUM);
     private JTextField adminSetPriceTextField          = new JTextField(NUMBER_OF_CHAR_INPUT_MEDIUM);
     private JTextField adminSetEmailSendTextField      = new JTextField(NUMBER_OF_CHAR_INPUT_MEDIUM);
     private JTextField adminSetLoginTextField          = new JTextField(NUMBER_OF_CHAR_INPUT_MEDIUM);
@@ -437,6 +452,10 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
         // Update Password
         JButton actionAdminUpdatePasswordButton = new JButton(BUTTON_CAPTION_ADMIN_SET_PASSWORD);
         actionAdminUpdatePasswordButton.addActionListener(this);
+        
+        // Update Sendgrid API Key
+        JButton actionAdminUpdateSendgridKeyButton = new JButton(BUTTON_CAPTION_ADMIN_SET_SENDGRID_KEY);
+        actionAdminUpdateSendgridKeyButton.addActionListener(this);
         
         
         /**
@@ -985,22 +1004,32 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
         mainLayout.putConstraint(SpringLayout.NORTH, adminSetPasswordTextField, TicketPOSGUI.LAYOUT_HEIGHT_7, SpringLayout.NORTH, adminSettingsPanel);
         mainLayout.putConstraint(SpringLayout.WEST,  actionAdminUpdatePasswordButton, TicketPOSGUI.LAYOUT_PADDING_11, SpringLayout.WEST, adminSettingsPanel);
         mainLayout.putConstraint(SpringLayout.NORTH, actionAdminUpdatePasswordButton, TicketPOSGUI.LAYOUT_HEIGHT_7, SpringLayout.NORTH, adminSettingsPanel);
+        
+        mainLayout.putConstraint(SpringLayout.WEST,  TicketPOSGUI.ADMIN_SET_SENDGRID_API_KEY_LABEL, TicketPOSGUI.LAYOUT_PADDING_3, SpringLayout.WEST, adminSettingsPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, TicketPOSGUI.ADMIN_SET_SENDGRID_API_KEY_LABEL, TicketPOSGUI.LAYOUT_HEIGHT_9, SpringLayout.NORTH, adminSettingsPanel);
+        mainLayout.putConstraint(SpringLayout.WEST,  adminSetSendGridKeyTextField, TicketPOSGUI.LAYOUT_PADDING_8, SpringLayout.WEST, adminSettingsPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, adminSetSendGridKeyTextField, TicketPOSGUI.LAYOUT_HEIGHT_9, SpringLayout.NORTH, adminSettingsPanel);
+        mainLayout.putConstraint(SpringLayout.WEST,  actionAdminUpdateSendgridKeyButton, TicketPOSGUI.LAYOUT_PADDING_11, SpringLayout.WEST, adminSettingsPanel);
+        mainLayout.putConstraint(SpringLayout.NORTH, actionAdminUpdateSendgridKeyButton, TicketPOSGUI.LAYOUT_HEIGHT_9, SpringLayout.NORTH, adminSettingsPanel);
 
         
         adminSettingsPanel.add(TicketPOSGUI.ADMIN_SET_PRICE_LABEL);
         adminSettingsPanel.add(TicketPOSGUI.ADMIN_SET_EMAIL_SENDING_LABEL);
         adminSettingsPanel.add(TicketPOSGUI.ADMIN_SET_LOGIN_LABEL);
         adminSettingsPanel.add(TicketPOSGUI.ADMIN_SET_PASSWORD_LABEL);
+        adminSettingsPanel.add(TicketPOSGUI.ADMIN_SET_SENDGRID_API_KEY_LABEL);
         
         adminSettingsPanel.add(actionAdminUpdatePriceButton);
         adminSettingsPanel.add(actionAdminUpdateEmailSettingsButton);
         adminSettingsPanel.add(actionAdminUpdateLoginButton);
         adminSettingsPanel.add(actionAdminUpdatePasswordButton);
+        adminSettingsPanel.add(actionAdminUpdateSendgridKeyButton);
         
         adminSettingsPanel.add(adminSetPriceTextField);
         adminSettingsPanel.add(adminSetEmailSendTextField);
         adminSettingsPanel.add(adminSetLoginTextField);
         adminSettingsPanel.add(adminSetPasswordTextField);
+        adminSettingsPanel.add(adminSetSendGridKeyTextField);
         
 		mainWindowPanel.add(adminSettingsPanel);
         // End Admin Panel (screen)
@@ -1146,6 +1175,17 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
         	} else {
         		SECRET_PASSWORD = password;
         		alert("Password was updated", "Info");
+        	}
+        	
+        } else if(actionCommand.equals(TicketPOSGUI.BUTTON_CAPTION_ADMIN_SET_SENDGRID_KEY)) {
+        	
+        	String sendgridKey = adminSetSendGridKeyTextField.getText();
+        	
+        	if (sendgridKey.isEmpty()) {
+        		alert("Please Enter SendGrid API Key", "Error");
+        	} else {
+        		SENDGRID_KEY = sendgridKey;
+        		alert("SendGrid API Key was updated", "Info");
         	}
         	
         } else if(actionCommand.equals(TicketPOSGUI.BUTTON_CAPTION_BACK)) {
@@ -1426,6 +1466,7 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
 				adminSetPriceTextField.setText(String.valueOf(movieTicketPrice));
 				adminSetEmailSendTextField.setText(String.valueOf(isEmailEnabled));
 				adminSetLoginTextField.setText(SECRET_USERNAME);
+				adminSetSendGridKeyTextField.setText(SENDGRID_KEY);
 				showPanel(adminSettingsPanel);
 			}
 		

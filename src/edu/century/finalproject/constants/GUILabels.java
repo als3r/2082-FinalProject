@@ -56,5 +56,6 @@ public interface GUILabels {
     public static final JLabel ADMIN_SET_EMAIL_SENDING_LABEL     = new JLabel("Email Senging (0-disabled, 1-enabled)");
     public static final JLabel ADMIN_SET_LOGIN_LABEL             = new JLabel("Login: ");
     public static final JLabel ADMIN_SET_PASSWORD_LABEL          = new JLabel("Password: ");
+    public static final JLabel ADMIN_SET_SENDGRID_API_KEY_LABEL  = new JLabel("Sendgrid API Key: ");
     
 }

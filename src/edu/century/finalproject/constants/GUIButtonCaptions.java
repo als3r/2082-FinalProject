@@ -21,5 +21,6 @@ public interface GUIButtonCaptions {
 	public static final String BUTTON_CAPTION_ADMIN_SET_EMAIL_SENDING = "Update Email Settings";
 	public static final String BUTTON_CAPTION_ADMIN_SET_LOGIN         = "Update Login";
 	public static final String BUTTON_CAPTION_ADMIN_SET_PASSWORD      = "Update Password";
+	public static final String BUTTON_CAPTION_ADMIN_SET_SENDGRID_KEY  = "Update SendGrid API Key";
 	
 }
