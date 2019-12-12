@@ -197,6 +197,7 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
      */
     private HashMap<String, Reservation> reservations = new HashMap<String, Reservation>();
 //    private List<Reservation> reservations = new ArrayList<>();
+//    private ReservationCollection reservations = new ReservationCollection();
     
     /**
      * JComboBox for genre selector
