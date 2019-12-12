@@ -27,6 +27,7 @@ import java.awt.event.ActionEvent;
 import javax.swing.Action;
 
 import java.lang.IllegalArgumentException;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -148,6 +149,8 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
     private JLabel confirmationTheaterLabel       = new JLabel();
     private JLabel confirmationNumberTicketsLabel = new JLabel();
     private JLabel confirmationTotalLabel         = new JLabel();
+
+    public static final NumberFormat USD = NumberFormat.getCurrencyInstance();
     
 //    private List<Genre>     genres   = new ArrayList<>();
 ////    private List<Theater>   theaters = new ArrayList<>();
@@ -444,6 +447,7 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
          */
         // text area
         adminconsoleTextArea = new JTextArea(TEXTAREA_NUMBER_OF_LINES, TEXTAREA_NUMBER_OF_CHAR);
+        adminconsoleTextArea.setFont(TicketPOSGUI.FONT_18);
         // add scroll to text area
         JScrollPane scrollPanelTextArea = new JScrollPane(adminconsoleTextArea);
         scrollPanelTextArea.setVerticalScrollBarPolicy ( ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS );
@@ -1084,7 +1088,7 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
 		        	actionAdminRefundReservationButton.setVisible(false);
 		        	
 		        	adminconsoleTextArea.setText("Refunded");
-		        	alert("Reservations was refunded", "Info");
+		        	alert("Reservation was refunded", "Info");
 		        	
 				} catch (NullPointerException e2) {
 					alert("Cannot refund this reservation", "Error");
@@ -1245,7 +1249,7 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
                     confirmationTimeLabel.setText(String.valueOf(reservation.getTicketInfo().getMovieTime()));
                     confirmationTheaterLabel.setText(String.valueOf(reservation.getTicketInfo().getTheater().getName()));
                     confirmationNumberTicketsLabel.setText(String.valueOf(reservation.getTicketInfo().getPay().getNumTickets()));
-                    confirmationTotalLabel.setText("$" + String.valueOf(reservation.getTicketInfo().getPay().getTotal()) + "0");
+                    confirmationTotalLabel.setText(USD.format(reservation.getTicketInfo().getPay().getTotal()));
                 	
         			showPanel(confirmationPageMainPanel);
         			
@@ -1685,7 +1689,7 @@ public class TicketPOSGUI extends JFrame implements ActionListener, GUIConstants
     	} else {
     		movieTicketsLeftLabel.setText("Only " + String.valueOf(availableTickets) + " seats left!");
     	}
-    	movieTicketsPriceLabel.setText("($" + String.valueOf(movieTicketPrice) + "0)");
+    	movieTicketsPriceLabel.setText("(" + USD.format(movieTicketPrice) + ")");
     			
     	try {
 			ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
